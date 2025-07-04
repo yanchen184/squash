@@ -1,7 +1,7 @@
 // Main game room component
 import React, { useState, useEffect } from 'react';
 import { subscribeToRoom, recordMatchResult, finishTournament, updateRoomStatus, undoLastMatch } from '../services/database';
-import { getCurrentMatch, getRoundNumber, getMatchInRound, calculateScores, getLeaderboard } from '../utils/gameLogic';
+import { getCurrentMatch, getRoundNumber, getMatchInRound, getLeaderboard } from '../utils/gameLogic';
 import GameBoard from './GameBoard';
 import Leaderboard from './Leaderboard';
 import MatchSchedule from './MatchSchedule';
@@ -12,7 +12,6 @@ const GameRoom = ({ roomCode, onLeaveRoom }) => {
   const [currentMatch, setCurrentMatch] = useState(['A', 'B']);
   const [roundNumber, setRoundNumber] = useState(1);
   const [matchInRound, setMatchInRound] = useState(1);
-  const [scores, setScores] = useState({ A: 0, B: 0, C: 0, D: 0 });
   const [leaderboard, setLeaderboard] = useState([]);
   const [showResults, setShowResults] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
@@ -42,7 +41,6 @@ const GameRoom = ({ roomCode, onLeaveRoom }) => {
     setCurrentMatch(match);
     setRoundNumber(round);
     setMatchInRound(matchInCurrentRound);
-    setScores(currentScores);
     setLeaderboard(getLeaderboard(currentScores, playerNames));
     setIsFinished(data.status === 'finished');
     
@@ -106,7 +104,7 @@ const GameRoom = ({ roomCode, onLeaveRoom }) => {
       <header className="game-header">
         <div className="room-info">
           <h1>房間: {roomCode}</h1>
-          <div className="version-info">v1.0.4</div>
+          <div className="version-info">v1.0.5</div>
         </div>
         <div className="game-progress">
           <div className="round-info">

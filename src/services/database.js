@@ -1,6 +1,6 @@
 // Database service for Firebase operations
 import { database } from './firebase';
-import { ref, set, get, onValue, push, serverTimestamp, off, update } from 'firebase/database';
+import { ref, set, get, onValue, serverTimestamp, off, update } from 'firebase/database';
 
 // Room operations
 export const createRoom = async (roomCode, hostName) => {
@@ -78,7 +78,6 @@ export const recordMatchResult = async (roomCode, matchIndex, winner) => {
   const roomData = roomSnapshot.val();
   console.log('Current room data:', roomData);
   const updatedMatches = [...(roomData.matches || [])];
-  const updatedScores = { ...(roomData.scores || { A: 0, B: 0, C: 0, D: 0 }) };
   
   // Add match result
   updatedMatches[matchIndex] = matchResult;
