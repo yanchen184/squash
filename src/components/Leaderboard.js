@@ -1,0 +1,38 @@
+// Leaderboard component for real-time scores
+import React from 'react';
+
+const Leaderboard = ({ leaderboard, isFinished }) => {
+  return (
+    <div className="leaderboard">
+      <div className="leaderboard-header">
+        <h3>即時積分榜</h3>
+        {isFinished && <div className="final-results">最終結果</div>}
+      </div>
+      
+      <div className="leaderboard-list">
+        {leaderboard.map((entry, index) => (
+          <div 
+            key={entry.player} 
+            className={`leaderboard-item ${index === 0 && isFinished ? 'winner' : ''}`}
+          >
+            <div className="rank">
+              {index + 1}
+              {index === 0 && isFinished && <span className="crown">👑</span>}
+            </div>
+            <div className="player-info">
+              <div className="player-label">{entry.player}</div>
+              <div className="player-name">{entry.name}</div>
+            </div>
+            <div className="score">{entry.score}</div>
+          </div>
+        ))}
+      </div>
+      
+      <div className="leaderboard-footer">
+        <small>積分 = 勝利場次</small>
+      </div>
+    </div>
+  );
+};
+
+export default Leaderboard;

@@ -1,0 +1,77 @@
+// Room joiner component
+import React, { useState } from 'react';
+import { getRoom } from '../services/database';
+import { isValidRoomCode } from '../utils/gameLogic';
+
+const RoomJoiner = ({ onJoinRoom }) => {
+  const [roomCode, setRoomCode] = useState('');
+  const [isJoining, setIsJoining] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleJoinRoom = async () => {
+    if (!roomCode.trim()) {
+      setError('請輸入房間代碼');
+      return;
+    }
+
+    if (!isValidRoomCode(roomCode.trim())) {
+      setError('房間代碼格式不正確（應為6位數字）');
+      return;
+    }
+
+    setIsJoining(true);
+    setError('');
+
+    try {
+      const room = await getRoom(roomCode.trim());
+      if (!room) {
+        setError('房間不存在或已過期');
+        return;
+      }
+
+      if (room.status === 'finished') {
+        setError('該房間已結束');
+        return;
+      }
+
+      onJoinRoom(roomCode.trim());
+    } catch (err) {
+      setError('加入房間失敗，請重試');
+      console.error('Error joining room:', err);
+    } finally {
+      setIsJoining(false);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleJoinRoom();
+    }
+  };
+
+  return (
+    <div className="room-joiner">
+      <h3>手動加入房間</h3>
+      <div className="input-group">
+        <input
+          type="text"
+          value={roomCode}
+          onChange={(e) => setRoomCode(e.target.value)}
+          onKeyPress={handleKeyPress}
+          placeholder="請輸入6位房間代碼"
+          maxLength={6}
+        />
+        <button 
+          className="join-btn"
+          onClick={handleJoinRoom}
+          disabled={isJoining}
+        >
+          {isJoining ? '加入中...' : '加入'}
+        </button>
+      </div>
+      {error && <div className="error-message">{error}</div>}
+    </div>
+  );
+};
+
+export default RoomJoiner;
