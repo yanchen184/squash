@@ -1,8 +1,8 @@
 {
   "name": "squash-tournament-system",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "private": true,
-  "homepage": "https://yanchen184.github.io/squash-tournament-system",
+  "homepage": "https://yanchen184.github.io/squash",
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^13.3.0",
