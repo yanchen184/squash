@@ -52,14 +52,17 @@ const GameRoom = ({ roomCode, onLeaveRoom }) => {
   };
 
   const handlePlayerWin = async (winner) => {
+    console.log('handlePlayerWin called with:', winner, 'roomData:', roomData, 'isFinished:', isFinished);
     if (!roomData || isFinished) return;
 
     try {
       const currentMatchIndex = roomData.currentMatch || 0;
+      console.log('Recording match result:', roomCode, currentMatchIndex, winner);
       await recordMatchResult(roomCode, currentMatchIndex, winner);
       
       // Update room status to playing if it's still waiting
       if (roomData.status === 'waiting') {
+        console.log('Updating room status to playing');
         await updateRoomStatus(roomCode, 'playing');
       }
     } catch (error) {
@@ -103,7 +106,7 @@ const GameRoom = ({ roomCode, onLeaveRoom }) => {
       <header className="game-header">
         <div className="room-info">
           <h1>房間: {roomCode}</h1>
-          <div className="version-info">v1.0.2</div>
+          <div className="version-info">v1.0.4</div>
         </div>
         <div className="game-progress">
           <div className="round-info">
@@ -139,24 +142,28 @@ const GameRoom = ({ roomCode, onLeaveRoom }) => {
       </header>
 
       <main className="game-content">
-        <div className="game-main">
-          <GameBoard 
-            currentMatch={currentMatch}
-            playerNames={roomData.playerNames}
-            onPlayerWin={handlePlayerWin}
-            isFinished={isFinished}
-          />
+        <div className="game-top">
+          <div className="game-board-container">
+            <GameBoard 
+              currentMatch={currentMatch}
+              playerNames={roomData.playerNames}
+              onPlayerWin={handlePlayerWin}
+              isFinished={isFinished}
+            />
+          </div>
+          
+          <div className="match-schedule-container">
+            <MatchSchedule 
+              currentMatchIndex={roomData.currentMatch || 0}
+              playerNames={roomData.playerNames}
+            />
+          </div>
         </div>
         
-        <div className="game-sidebar">
+        <div className="game-bottom">
           <Leaderboard 
             leaderboard={leaderboard}
             isFinished={isFinished}
-          />
-          
-          <MatchSchedule 
-            currentMatchIndex={roomData.currentMatch || 0}
-            playerNames={roomData.playerNames}
           />
         </div>
       </main>

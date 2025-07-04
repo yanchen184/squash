@@ -8,7 +8,9 @@ const GameBoard = ({ currentMatch, playerNames, onPlayerWin, isFinished }) => {
   const player2Name = playerNames?.[player2] || player2;
 
   const handlePlayerClick = (player) => {
+    console.log('Player clicked:', player, 'isFinished:', isFinished);
     if (isFinished) return;
+    console.log('Calling onPlayerWin with:', player);
     onPlayerWin(player);
   };
 

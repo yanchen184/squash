@@ -299,10 +299,28 @@ body {
 
 .game-content {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+}
+
+.game-top {
   display: grid;
   grid-template-columns: 1fr 320px;
   gap: 20px;
-  padding: 20px;
+}
+
+.game-board-container {
+  min-height: 400px;
+}
+
+.match-schedule-container {
+  min-height: 400px;
+}
+
+.game-bottom {
+  width: 100%;
 }
 
 /* Game board styles */
@@ -496,7 +514,7 @@ body {
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-top: 20px;
+  height: fit-content;
 }
 
 .schedule-header {
@@ -615,11 +633,7 @@ body {
   font-style: italic;
 }
 
-.game-sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
+
 
 /* Modal styles */
 .modal-overlay {
@@ -903,8 +917,19 @@ body {
     flex-direction: column;
   }
   
-  .game-content {
+  .game-top {
     grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .game-board-container,
+  .match-schedule-container {
+    min-height: auto;
+  }
+  
+  .game-content {
+    padding: 15px;
+    gap: 15px;
   }
   
   .game-header {

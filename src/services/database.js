@@ -1,6 +1,6 @@
 // Database service for Firebase operations
 import { database } from './firebase';
-import { ref, set, get, onValue, push, serverTimestamp, off } from 'firebase/database';
+import { ref, set, get, onValue, push, serverTimestamp, off, update } from 'firebase/database';
 
 // Room operations
 export const createRoom = async (roomCode, hostName) => {
@@ -58,6 +58,7 @@ export const updateRoomStatus = async (roomCode, status) => {
 
 // Record match result
 export const recordMatchResult = async (roomCode, matchIndex, winner) => {
+  console.log('recordMatchResult called:', { roomCode, matchIndex, winner });
   const roomRef = ref(database, `rooms/${roomCode}`);
   
   // Create match result object
@@ -69,14 +70,19 @@ export const recordMatchResult = async (roomCode, matchIndex, winner) => {
   
   // Get current room data
   const roomSnapshot = await get(roomRef);
-  if (!roomSnapshot.exists()) return;
+  if (!roomSnapshot.exists()) {
+    console.error('Room does not exist:', roomCode);
+    return;
+  }
   
   const roomData = roomSnapshot.val();
+  console.log('Current room data:', roomData);
   const updatedMatches = [...(roomData.matches || [])];
   const updatedScores = { ...(roomData.scores || { A: 0, B: 0, C: 0, D: 0 }) };
   
   // Add match result
   updatedMatches[matchIndex] = matchResult;
+  console.log('Updated matches:', updatedMatches);
   
   // Recalculate scores from all matches
   const recalculatedScores = { A: 0, B: 0, C: 0, D: 0 };
@@ -85,16 +91,19 @@ export const recordMatchResult = async (roomCode, matchIndex, winner) => {
       recalculatedScores[match.winner] += 1;
     }
   });
+  console.log('Recalculated scores:', recalculatedScores);
   
   // Update room data
   const updates = {
-    [`rooms/${roomCode}/matches`]: updatedMatches,
-    [`rooms/${roomCode}/scores`]: recalculatedScores,
-    [`rooms/${roomCode}/currentMatch`]: matchIndex + 1,
-    [`rooms/${roomCode}/lastUpdated`]: Date.now()
+    [`matches`]: updatedMatches,
+    [`scores`]: recalculatedScores,
+    [`currentMatch`]: matchIndex + 1,
+    [`lastUpdated`]: Date.now()
   };
   
-  await set(ref(database), updates);
+  console.log('Updating room with:', updates);
+  await update(roomRef, updates);
+  console.log('Room update completed');
 };
 
 // Undo last match result
@@ -139,13 +148,13 @@ export const undoLastMatch = async (roomCode) => {
   
   // Update room data
   const updates = {
-    [`rooms/${roomCode}/matches`]: updatedMatches,
-    [`rooms/${roomCode}/scores`]: recalculatedScores,
-    [`rooms/${roomCode}/currentMatch`]: newCurrentMatch,
-    [`rooms/${roomCode}/lastUpdated`]: Date.now()
+    [`matches`]: updatedMatches,
+    [`scores`]: recalculatedScores,
+    [`currentMatch`]: newCurrentMatch,
+    [`lastUpdated`]: Date.now()
   };
   
-  await set(ref(database), updates);
+  await update(roomRef, updates);
   return true;
 };
 
