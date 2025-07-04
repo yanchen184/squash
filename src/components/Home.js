@@ -27,7 +27,7 @@ const Home = ({ onJoinRoom }) => {
     <div className="home-container">
       <header className="app-header">
         <h1>計分賽程競技系統</h1>
-        <div className="version-info">v1.0.4</div>
+        <div className="version-info">v1.0.5</div>
         <button 
           className="settings-btn"
           onClick={() => setShowSettings(true)}
