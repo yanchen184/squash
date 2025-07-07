@@ -201,7 +201,7 @@ const GameRoom = ({ roomCode, onLeaveRoom }) => {
           <footer className="game-footer">
             <div className="room-info-mobile">
               <div className="room-code-mobile">房間: {roomCode}</div>
-              <div className="version-info">v1.3.2</div>
+              <div className="version-info">v1.4.0</div>
               <div className="round-info-mobile">
                 第 {roundNumber} 輪 - 比賽 {matchInRound}/6
               </div>
@@ -238,7 +238,7 @@ const GameRoom = ({ roomCode, onLeaveRoom }) => {
           <header className="game-header">
             <div className="room-info">
               <h1>房間: {roomCode}</h1>
-              <div className="version-info">v1.3.2</div>
+              <div className="version-info">v1.4.0</div>
             </div>
             <div className="game-progress">
               <div className="round-info">

@@ -1,6 +1,6 @@
 {
   "name": "squash-tournament-system",
-  "version": "1.3.2",
+  "version": "1.4.0",
   "private": true,
   "homepage": "https://yanchen184.github.io/squash",
   "dependencies": {
