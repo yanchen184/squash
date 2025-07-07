@@ -1272,7 +1272,6 @@ body {
   padding: 15px;
   gap: 15px;
   overflow-y: auto;
-  height: calc(100vh - 140px);
 }
 
 /* Current Match Section - Mobile */
@@ -1439,15 +1438,11 @@ body {
 .leaderboard-container-mobile {
   display: flex;
   flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
 }
 
 .match-schedule-container-mobile .match-schedule,
 .leaderboard-container-mobile .leaderboard {
-  flex: 1;
   padding: 12px;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
 }
@@ -1461,8 +1456,6 @@ body {
 
 .mobile-layout .schedule-list,
 .mobile-layout .leaderboard-list {
-  flex: 1;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -1470,7 +1463,6 @@ body {
 
 .mobile-layout .schedule-footer,
 .mobile-layout .leaderboard-footer {
-  flex-shrink: 0;
   margin-top: 8px;
   padding-top: 8px;
   border-top: 1px solid #ddd;
@@ -1624,8 +1616,8 @@ body {
   padding: 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.1);
-  flex-shrink: 0;
   position: relative;
+  margin-top: 15px;
 }
 
 .game-footer::before {
