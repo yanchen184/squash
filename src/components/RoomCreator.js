@@ -33,8 +33,8 @@ const RoomCreator = ({ onClose, onRoomCreated }) => {
         
         <div className="modal-body">
           <div className="create-room-info">
-            <p>將創建一個新的 4 人競技房間</p>
-            <p>固定對戰順序：AB → CD → CA → BD → BC → AD</p>
+            <p>將創建一個新的 4 人壁球競賽房間</p>
+            <p>特殊規則：第1-2場固定，第3場贏家組對戰，第4場輸家組對戰</p>
           </div>
 
           {error && <div className="error-message">{error}</div>}

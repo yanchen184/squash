@@ -1,7 +1,7 @@
 // Main game room component
 import React, { useState, useEffect } from 'react';
 import { subscribeToRoom, recordMatchResult, finishTournament, updateRoomStatus, undoLastMatch } from '../services/database';
-import { getCurrentMatch, getRoundNumber, getMatchInRound, getLeaderboard } from '../utils/gameLogic';
+import { getCurrentMatch, getCurrentMatchOrder, getRoundNumber, getMatchInRound, getLeaderboard } from '../utils/gameLogic';
 import GameBoard from './GameBoard';
 import Leaderboard from './Leaderboard';
 import MatchSchedule from './MatchSchedule';
@@ -16,6 +16,17 @@ const GameRoom = ({ roomCode, onLeaveRoom }) => {
   const [showResults, setShowResults] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
   const [canUndo, setCanUndo] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    // Handle window resize for responsive design
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     // Subscribe to room data changes
@@ -31,12 +42,13 @@ const GameRoom = ({ roomCode, onLeaveRoom }) => {
 
   const updateGameState = (data) => {
     const currentMatchIndex = data.currentMatch || 0;
-    const match = getCurrentMatch(currentMatchIndex);
+    const matches = data.matches || [];
+    const match = getCurrentMatch(currentMatchIndex, matches);
+    const currentMatchOrder = getCurrentMatchOrder(matches, currentMatchIndex);
     const round = getRoundNumber(currentMatchIndex);
     const matchInCurrentRound = getMatchInRound(currentMatchIndex);
     const currentScores = data.scores || { A: 0, B: 0, C: 0, D: 0 };
     const playerNames = data.playerNames || {};
-    const matches = data.matches || [];
 
     setCurrentMatch(match);
     setRoundNumber(round);
@@ -100,71 +112,173 @@ const GameRoom = ({ roomCode, onLeaveRoom }) => {
   }
 
   return (
-    <div className="game-room">
-      <header className="game-header">
-        <div className="room-info">
-          <h1>房間: {roomCode}</h1>
-          <div className="version-info">v1.0.5</div>
-        </div>
-        <div className="game-progress">
-          <div className="round-info">
-            第 {roundNumber} 輪 - 比賽 {matchInRound}/6
-          </div>
-          <div className="match-info">
-            當前對戰: {roomData.playerNames?.[currentMatch[0]] || currentMatch[0]} vs {roomData.playerNames?.[currentMatch[1]] || currentMatch[1]}
-          </div>
-        </div>
-        <div className="header-actions">
-          <button 
-            className="undo-btn"
-            onClick={handleUndoLastMatch}
-            disabled={!canUndo}
-            title="撤回上一場比賽結果"
-          >
-            撤回
-          </button>
-          <button 
-            className="finish-btn"
-            onClick={handleFinishTournament}
-            disabled={isFinished}
-          >
-            {isFinished ? '已結束' : '結束比賽'}
-          </button>
-          <button 
-            className="leave-btn"
-            onClick={onLeaveRoom}
-          >
-            離開房間
-          </button>
-        </div>
-      </header>
+    <div className={`game-room ${isMobile ? 'mobile-layout' : ''}`}>
+      {isMobile ? (
+        // Mobile Layout
+        <>
+          <main className="game-content">
+            {/* Current Match - Top Section */}
+            <div className="current-match-section">
+              <div className="match-title">
+                <h2>當前對戰</h2>
+                {isFinished && <div className="finished-badge">已結束</div>}
+              </div>
+              
+              <div className="vs-container-mobile">
+                <div 
+                  className={`player-card-mobile ${isFinished ? 'disabled' : 'clickable'}`}
+                  onClick={() => handlePlayerWin(currentMatch[0])}
+                >
+                  <div className="player-label">{currentMatch[0]}</div>
+                  <div className="player-name">{roomData.playerNames?.[currentMatch[0]] || currentMatch[0]}</div>
+                  {!isFinished && <div className="win-hint">點擊選擇勝利者</div>}
+                </div>
 
-      <main className="game-content">
-        <div className="game-top">
-          <div className="game-board-container">
-            <GameBoard 
-              currentMatch={currentMatch}
-              playerNames={roomData.playerNames}
-              onPlayerWin={handlePlayerWin}
-              isFinished={isFinished}
-            />
-          </div>
-          
-          <div className="match-schedule-container">
-            <MatchSchedule 
-              currentMatchIndex={roomData.currentMatch || 0}
-              playerNames={roomData.playerNames}
-            />
-          </div>
-        </div>
-        
-        <div className="game-bottom">
-          <Leaderboard 
-            leaderboard={leaderboard}
-            isFinished={isFinished}
-          />
-        </div>
-      </main>
+                <div className="vs-divider-mobile">
+                  <span>VS</span>
+                </div>
+
+                <div 
+                  className={`player-card-mobile ${isFinished ? 'disabled' : 'clickable'}`}
+                  onClick={() => handlePlayerWin(currentMatch[1])}
+                >
+                  <div className="player-label">{currentMatch[1]}</div>
+                  <div className="player-name">{roomData.playerNames?.[currentMatch[1]] || currentMatch[1]}</div>
+                  {!isFinished && <div className="win-hint">點擊選擇勝利者</div>}
+                </div>
+              </div>
+
+              {isFinished && (
+                <div className="finished-message">
+                  <p>比賽已結束，感謝參與！</p>
+                </div>
+              )}
+            </div>
+            
+            {/* Middle Section - Schedule and Leaderboard */}
+            <div className="game-middle">
+              <div className="match-schedule-container-mobile">
+                <MatchSchedule 
+                  currentMatchIndex={roomData.currentMatch || 0}
+                  playerNames={roomData.playerNames}
+                  matchResults={roomData.matches || []}
+                />
+              </div>
+              
+              <div className="leaderboard-container-mobile">
+                <Leaderboard 
+                  leaderboard={leaderboard}
+                  isFinished={isFinished}
+                />
+              </div>
+            </div>
+          </main>
+
+          {/* Bottom Section - Room Info and Controls */}
+          <footer className="game-footer">
+            <div className="room-info-mobile">
+              <div className="room-code-mobile">房間: {roomCode}</div>
+              <div className="version-info">v1.2.0</div>
+              <div className="round-info-mobile">
+                第 {roundNumber} 輪 - 比賽 {matchInRound}/6
+              </div>
+            </div>
+            
+            <div className="footer-actions">
+              <button 
+                className="undo-btn"
+                onClick={handleUndoLastMatch}
+                disabled={!canUndo}
+                title="撤回上一場比賽結果"
+              >
+                撤回
+              </button>
+              <button 
+                className="finish-btn"
+                onClick={handleFinishTournament}
+                disabled={isFinished}
+              >
+                {isFinished ? '已結束' : '結束比賽'}
+              </button>
+              <button 
+                className="leave-btn"
+                onClick={onLeaveRoom}
+              >
+                離開房間
+              </button>
+            </div>
+          </footer>
+        </>
+      ) : (
+        // Desktop Layout (Original)
+        <>
+          <header className="game-header">
+            <div className="room-info">
+              <h1>房間: {roomCode}</h1>
+              <div className="version-info">v1.2.0</div>
+            </div>
+            <div className="game-progress">
+              <div className="round-info">
+                第 {roundNumber} 輪 - 比賽 {matchInRound}/6
+              </div>
+              <div className="match-info">
+                當前對戰: {roomData.playerNames?.[currentMatch[0]] || currentMatch[0]} vs {roomData.playerNames?.[currentMatch[1]] || currentMatch[1]}
+              </div>
+            </div>
+            <div className="header-actions">
+              <button 
+                className="undo-btn"
+                onClick={handleUndoLastMatch}
+                disabled={!canUndo}
+                title="撤回上一場比賽結果"
+              >
+                撤回
+              </button>
+              <button 
+                className="finish-btn"
+                onClick={handleFinishTournament}
+                disabled={isFinished}
+              >
+                {isFinished ? '已結束' : '結束比賽'}
+              </button>
+              <button 
+                className="leave-btn"
+                onClick={onLeaveRoom}
+              >
+                離開房間
+              </button>
+            </div>
+          </header>
+
+          <main className="game-content">
+            <div className="game-top">
+              <div className="game-board-container">
+                <GameBoard 
+                  currentMatch={currentMatch}
+                  playerNames={roomData.playerNames}
+                  onPlayerWin={handlePlayerWin}
+                  isFinished={isFinished}
+                />
+              </div>
+              
+              <div className="match-schedule-container">
+                <MatchSchedule 
+                  currentMatchIndex={roomData.currentMatch || 0}
+                  playerNames={roomData.playerNames}
+                  matchResults={roomData.matches || []}
+                />
+              </div>
+            </div>
+            
+            <div className="game-bottom">
+              <Leaderboard 
+                leaderboard={leaderboard}
+                isFinished={isFinished}
+              />
+            </div>
+          </main>
+        </>
+      )}
 
       {showResults && (
         <ResultsModal 

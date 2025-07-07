@@ -595,6 +595,26 @@ body {
   font-size: 11px;
 }
 
+.match-label {
+  background-color: #ffc107;
+  color: #212529;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: bold;
+  margin-left: 4px;
+}
+
+.match-label.winners {
+  background-color: #28a745;
+  color: white;
+}
+
+.match-label.losers {
+  background-color: #dc3545;
+  color: white;
+}
+
 .match-status {
   min-width: 50px;
   text-align: center;
@@ -911,6 +931,255 @@ body {
   margin-top: 10px;
 }
 
+/* Mobile layout styles */
+.mobile-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-layout .game-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  gap: 10px;
+  overflow-y: auto;
+  height: calc(100vh - 120px); /* 預留footer空間 */
+}
+
+/* Current Match Section - Mobile */
+.current-match-section {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.current-match-section .match-title {
+  margin-bottom: 15px;
+  position: relative;
+}
+
+.current-match-section .match-title h2 {
+  font-size: 18px;
+  color: #333;
+  margin: 0;
+}
+
+.vs-container-mobile {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.player-card-mobile {
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 8px;
+  flex: 1;
+  max-width: 110px;
+  transition: all 0.3s;
+  border: 2px solid transparent;
+}
+
+.player-card-mobile.clickable {
+  cursor: pointer;
+}
+
+.player-card-mobile.clickable:hover {
+  background: #e9ecef;
+  border-color: #007bff;
+  transform: translateY(-2px);
+}
+
+.player-card-mobile.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.player-card-mobile .player-label {
+  font-size: 22px;
+  font-weight: bold;
+  color: #007bff;
+  margin-bottom: 4px;
+}
+
+.player-card-mobile .player-name {
+  font-size: 13px;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.player-card-mobile .win-hint {
+  font-size: 9px;
+  color: #666;
+  font-style: italic;
+}
+
+.vs-divider-mobile {
+  font-size: 18px;
+  font-weight: bold;
+  color: #666;
+  min-width: 40px;
+}
+
+/* Middle Section - Mobile */
+.game-middle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  flex: 1;
+  min-height: 0; /* 允許子元素縮小 */
+}
+
+.match-schedule-container-mobile,
+.leaderboard-container-mobile {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.match-schedule-container-mobile .match-schedule,
+.leaderboard-container-mobile .leaderboard {
+  flex: 1;
+  padding: 12px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.match-schedule-container-mobile .match-schedule h3,
+.leaderboard-container-mobile .leaderboard h3 {
+  font-size: 16px;
+  margin-bottom: 8px;
+  flex-shrink: 0;
+}
+
+.mobile-layout .schedule-list,
+.mobile-layout .leaderboard-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mobile-layout .schedule-footer,
+.mobile-layout .leaderboard-footer {
+  flex-shrink: 0;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #ddd;
+}
+
+/* Mobile Schedule Adjustments */
+.mobile-layout .schedule-item {
+  padding: 6px;
+  font-size: 11px;
+}
+
+.mobile-layout .match-players {
+  font-size: 10px;
+}
+
+.mobile-layout .match-players .player-name {
+  font-size: 9px;
+}
+
+.mobile-layout .match-label {
+  font-size: 8px;
+  padding: 1px 4px;
+}
+
+.mobile-layout .schedule-footer {
+  margin-top: 10px;
+  padding-top: 10px;
+}
+
+.mobile-layout .progress-info,
+.mobile-layout .cycle-info {
+  font-size: 10px;
+}
+
+/* Mobile Leaderboard Adjustments */
+.mobile-layout .leaderboard-item {
+  padding: 6px;
+  gap: 6px;
+}
+
+.mobile-layout .rank {
+  font-size: 13px;
+  min-width: 20px;
+}
+
+.mobile-layout .player-info .player-label {
+  font-size: 13px;
+}
+
+.mobile-layout .player-info .player-name {
+  font-size: 10px;
+  display: none; /* Hide player names on mobile to save space */
+}
+
+.mobile-layout .score {
+  font-size: 15px;
+}
+
+.mobile-layout .leaderboard-header h3 {
+  font-size: 14px;
+}
+
+.mobile-layout .leaderboard-footer {
+  margin-top: 8px;
+  padding-top: 8px;
+  font-size: 10px;
+}
+
+/* Footer Section - Mobile */
+.game-footer {
+  background: white;
+  padding: 12px 15px;
+  border-top: 1px solid #ddd;
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.room-info-mobile {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.room-code-mobile {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.round-info-mobile {
+  font-size: 14px;
+  color: #007bff;
+  font-weight: bold;
+}
+
+.footer-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.footer-actions button {
+  flex: 1;
+  max-width: 100px;
+  font-size: 12px;
+  padding: 8px 12px;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
   .home-content {
@@ -965,4 +1234,31 @@ body {
   .modal-content {
     width: 95%;
   }
+}
+
+/* Rotation info styles */
+.rotation-info {
+  margin-top: 8px;
+  padding: 4px 8px;
+  background-color: #e8f4f8;
+  border-radius: 4px;
+  border-left: 3px solid #17a2b8;
+}
+
+.rotation-info small {
+  color: #17a2b8;
+  font-weight: 500;
+}
+
+.rotation-note {
+  margin-top: 8px;
+  padding: 4px 8px;
+  background-color: #fff3cd;
+  border-radius: 4px;
+  border-left: 3px solid #ffc107;
+}
+
+.rotation-note small {
+  color: #856404;
+  font-weight: 500;
 }

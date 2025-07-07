@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/squash/static/css/main.ed126c4d.css",
+    "main.js": "/squash/static/js/main.1a45e1d6.js",
+    "index.html": "/squash/index.html",
+    "main.ed126c4d.css.map": "/squash/static/css/main.ed126c4d.css.map",
+    "main.1a45e1d6.js.map": "/squash/static/js/main.1a45e1d6.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.ed126c4d.css",
+    "static/js/main.1a45e1d6.js"
+  ]
+}
