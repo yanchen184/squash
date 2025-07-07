@@ -398,6 +398,13 @@ body {
   margin-bottom: 8px;
 }
 
+.player-score {
+  font-size: 20px;
+  font-weight: bold;
+  color: #28a745;
+  margin-bottom: 8px;
+}
+
 .win-hint {
   font-size: 12px;
   color: #666;
@@ -408,6 +415,50 @@ body {
   font-size: 24px;
   font-weight: bold;
   color: #666;
+}
+
+.score-info {
+  margin-bottom: 20px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  text-align: center;
+  border: 2px solid #dee2e6;
+}
+
+.score-tied {
+  font-size: 18px;
+  font-weight: bold;
+  color: #6c757d;
+}
+
+.score-difference {
+  font-size: 18px;
+  font-weight: bold;
+  color: #007bff;
+}
+
+.score-info-mobile {
+  margin-bottom: 10px;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  text-align: center;
+  border: 1px solid #dee2e6;
+}
+
+.score-info-mobile .score-tied,
+.score-info-mobile .score-difference {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.score-info-mobile .score-tied {
+  color: #6c757d;
+}
+
+.score-info-mobile .score-difference {
+  color: #007bff;
 }
 
 .finished-message {
@@ -1014,6 +1065,13 @@ body {
   margin-bottom: 4px;
 }
 
+.player-card-mobile .player-score {
+  font-size: 14px;
+  font-weight: bold;
+  color: #28a745;
+  margin-bottom: 4px;
+}
+
 .player-card-mobile .win-hint {
   font-size: 9px;
   color: #666;
@@ -1030,10 +1088,10 @@ body {
 /* Middle Section - Mobile */
 .game-middle {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 2fr 1fr;
   gap: 10px;
   flex: 1;
-  min-height: 0; /* 允許子元素縮小 */
+  min-height: 0; /* Allow child elements to shrink */
 }
 
 .match-schedule-container-mobile,

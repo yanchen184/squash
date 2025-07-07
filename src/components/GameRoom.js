@@ -131,6 +131,7 @@ const GameRoom = ({ roomCode, onLeaveRoom }) => {
                 >
                   <div className="player-label">{currentMatch[0]}</div>
                   <div className="player-name">{roomData.playerNames?.[currentMatch[0]] || currentMatch[0]}</div>
+                  <div className="player-score">{roomData.scores?.[currentMatch[0]] || 0} 分</div>
                   {!isFinished && <div className="win-hint">點擊選擇勝利者</div>}
                 </div>
 
@@ -144,8 +145,30 @@ const GameRoom = ({ roomCode, onLeaveRoom }) => {
                 >
                   <div className="player-label">{currentMatch[1]}</div>
                   <div className="player-name">{roomData.playerNames?.[currentMatch[1]] || currentMatch[1]}</div>
+                  <div className="player-score">{roomData.scores?.[currentMatch[1]] || 0} 分</div>
                   {!isFinished && <div className="win-hint">點擊選擇勝利者</div>}
                 </div>
+              </div>
+
+              {/* Score difference display for mobile */}
+              <div className="score-info-mobile">
+                {(() => {
+                  const player1Score = roomData.scores?.[currentMatch[0]] || 0;
+                  const player2Score = roomData.scores?.[currentMatch[1]] || 0;
+                  const scoreDifference = Math.abs(player1Score - player2Score);
+                  const player1Name = roomData.playerNames?.[currentMatch[0]] || currentMatch[0];
+                  const player2Name = roomData.playerNames?.[currentMatch[1]] || currentMatch[1];
+                  const leadingPlayer = player1Score > player2Score ? player1Name : 
+                                       player2Score > player1Score ? player2Name : null;
+                  
+                  return scoreDifference === 0 ? (
+                    <div className="score-tied">目前積分打平 ({player1Score} - {player2Score})</div>
+                  ) : (
+                    <div className="score-difference">
+                      {leadingPlayer} 領先 {scoreDifference} 分 ({player1Score} - {player2Score})
+                    </div>
+                  );
+                })()}
               </div>
 
               {isFinished && (
@@ -178,7 +201,7 @@ const GameRoom = ({ roomCode, onLeaveRoom }) => {
           <footer className="game-footer">
             <div className="room-info-mobile">
               <div className="room-code-mobile">房間: {roomCode}</div>
-              <div className="version-info">v1.2.0</div>
+              <div className="version-info">v1.3.1</div>
               <div className="round-info-mobile">
                 第 {roundNumber} 輪 - 比賽 {matchInRound}/6
               </div>
@@ -215,7 +238,7 @@ const GameRoom = ({ roomCode, onLeaveRoom }) => {
           <header className="game-header">
             <div className="room-info">
               <h1>房間: {roomCode}</h1>
-              <div className="version-info">v1.2.0</div>
+              <div className="version-info">v1.3.1</div>
             </div>
             <div className="game-progress">
               <div className="round-info">
@@ -258,6 +281,7 @@ const GameRoom = ({ roomCode, onLeaveRoom }) => {
                   playerNames={roomData.playerNames}
                   onPlayerWin={handlePlayerWin}
                   isFinished={isFinished}
+                  playerScores={roomData.scores}
                 />
               </div>
               

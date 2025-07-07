@@ -17,11 +17,6 @@ const MatchSchedule = ({ currentMatchIndex, playerNames, matchResults = [] }) =>
       <div className="schedule-header">
         <h3>動態對戰順序</h3>
         <div className="current-round">第 {currentRound} 輪</div>
-        {currentRound > 1 && (
-          <div className="rotation-info">
-            <small>位置輪動: {Object.entries(rotationInfo.mapping).map(([orig, curr]) => `${orig}→${curr}`).join(', ')}</small>
-          </div>
-        )}
       </div>
 
       <div className="schedule-list">
@@ -84,11 +79,6 @@ const MatchSchedule = ({ currentMatchIndex, playerNames, matchResults = [] }) =>
         <div className="rotation-explanation">
           <small>💡 對戰順序: 前兩場固定 → 第3-4場由前兩場結果決定 → 第5-6場補齊剩餘組合</small>
         </div>
-        {currentRound > 1 && (
-          <div className="rotation-note">
-            <small>第{currentRound}輪開始，參賽者位置輪動 (A→B, B→C, C→D, D→A)</small>
-          </div>
-        )}
       </div>
     </div>
   );

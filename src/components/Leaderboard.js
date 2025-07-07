@@ -5,7 +5,7 @@ const Leaderboard = ({ leaderboard, isFinished }) => {
   return (
     <div className="leaderboard">
       <div className="leaderboard-header">
-        <h3>即時積分榜</h3>
+        <h3>積分榜</h3>
         {isFinished && <div className="final-results">最終結果</div>}
       </div>
       
