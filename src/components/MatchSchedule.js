@@ -62,7 +62,6 @@ const MatchSchedule = ({ currentMatchIndex, playerNames, matchResults = [] }) =>
               <div className="match-status">
                 {isCurrentMatch && <span className="current-indicator">進行中</span>}
                 {isPastMatch && <span className="completed-indicator">✓</span>}
-                {!isMatchConfirmed && !isCurrentMatch && !isPastMatch && <span className="tbc-indicator">待確認</span>}
               </div>
             </div>
           );

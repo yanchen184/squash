@@ -482,24 +482,29 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #007bff;
 }
 
 .leaderboard-header h3 {
-  color: #333;
+  color: #007bff;
+  font-size: 20px;
+  margin: 0;
 }
 
 .final-results {
   background-color: #28a745;
   color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 6px 12px;
+  border-radius: 6px;
   font-size: 12px;
+  font-weight: bold;
 }
 
 .leaderboard-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .leaderboard-item {
@@ -507,24 +512,42 @@ body {
   align-items: center;
   gap: 15px;
   padding: 15px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  transition: background-color 0.3s;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  background: #fafafa;
+}
+
+.leaderboard-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
 }
 
 .leaderboard-item.winner {
-  background-color: #fff3cd;
+  background: linear-gradient(135deg, #fff3cd, #ffeaa7);
   border-color: #ffc107;
+  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
 }
 
 .rank {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: bold;
-  color: #666;
-  min-width: 30px;
+  color: #495057;
+  min-width: 40px;
+  text-align: center;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 5px;
+  background: #e9ecef;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+}
+
+.leaderboard-item.winner .rank {
+  background: #ffc107;
+  color: #212529;
 }
 
 .crown {
@@ -533,30 +556,44 @@ body {
 
 .player-info {
   flex: 1;
+  min-width: 0;
 }
 
-.player-label {
-  font-size: 16px;
+.player-info .player-label {
+  font-size: 18px;
   font-weight: bold;
   color: #007bff;
+  margin-bottom: 4px;
 }
 
-.player-name {
+.player-info .player-name {
   font-size: 14px;
-  color: #666;
+  color: #6c757d;
+  font-style: italic;
 }
 
 .score {
-  font-size: 20px;
+  font-size: 24px;
   font-weight: bold;
-  color: #333;
+  color: #28a745;
+  text-align: center;
+  min-width: 50px;
+  background: #e8f5e8;
+  padding: 8px 12px;
+  border-radius: 6px;
 }
 
 .leaderboard-footer {
   margin-top: 15px;
   padding-top: 15px;
-  border-top: 1px solid #ddd;
+  border-top: 2px solid #e9ecef;
   text-align: center;
+}
+
+.leaderboard-footer small {
+  color: #6c757d;
+  font-style: italic;
+  font-size: 12px;
 }
 
 /* Match schedule styles */
@@ -654,6 +691,8 @@ body {
   font-size: 10px;
   font-weight: bold;
   margin-left: 4px;
+  display: inline-block;
+  white-space: nowrap;
 }
 
 .match-label.winners {
@@ -1152,6 +1191,9 @@ body {
 .mobile-layout .match-label {
   font-size: 8px;
   padding: 1px 4px;
+  display: inline-block;
+  white-space: nowrap;
+  margin-left: 2px;
 }
 
 .mobile-layout .schedule-footer {
@@ -1166,36 +1208,109 @@ body {
 
 /* Mobile Leaderboard Adjustments */
 .mobile-layout .leaderboard-item {
-  padding: 6px;
-  gap: 6px;
+  padding: 8px 6px;
+  gap: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
 }
 
 .mobile-layout .rank {
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: bold;
   min-width: 20px;
+  text-align: center;
+  color: #495057;
+  background: none;
+  border-radius: 0;
+  width: auto;
+  height: auto;
+  display: block;
+}
+
+.mobile-layout .player-info {
+  flex: 1;
+  text-align: center;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .mobile-layout .player-info .player-label {
-  font-size: 13px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #007bff;
+  line-height: 1;
+  margin: 0;
 }
 
 .mobile-layout .player-info .player-name {
-  font-size: 10px;
-  display: none; /* Hide player names on mobile to save space */
+  font-size: 9px;
+  color: #6c757d;
+  margin: 2px 0 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .mobile-layout .score {
-  font-size: 15px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #28a745;
+  min-width: 20px;
+  text-align: center;
+  background: none;
+  padding: 0;
+  border-radius: 0;
+}
+
+.mobile-layout .leaderboard-header {
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #007bff;
 }
 
 .mobile-layout .leaderboard-header h3 {
   font-size: 14px;
+  color: #007bff;
+  text-align: center;
+  margin: 0;
 }
 
 .mobile-layout .leaderboard-footer {
   margin-top: 8px;
   padding-top: 8px;
+  font-size: 9px;
+  text-align: center;
+  color: #666;
+  border-top: 1px solid #ddd;
+}
+
+.mobile-layout .leaderboard {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 12px;
+}
+
+/* Winner styling for mobile */
+.mobile-layout .leaderboard-item.winner {
+  background: #fff3cd;
+  border-color: #ffc107;
+}
+
+.mobile-layout .leaderboard-item.winner .rank {
+  color: #856404;
+}
+
+.mobile-layout .crown {
   font-size: 10px;
+  margin-left: 2px;
 }
 
 /* Footer Section - Mobile */
