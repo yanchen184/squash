@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/squash/static/css/main.34f6b942.css",
-    "main.js": "/squash/static/js/main.703cf515.js",
+    "main.css": "/squash/static/css/main.c7a0de4b.css",
+    "main.js": "/squash/static/js/main.228320a0.js",
     "index.html": "/squash/index.html",
-    "main.34f6b942.css.map": "/squash/static/css/main.34f6b942.css.map",
-    "main.703cf515.js.map": "/squash/static/js/main.703cf515.js.map"
+    "main.c7a0de4b.css.map": "/squash/static/css/main.c7a0de4b.css.map",
+    "main.228320a0.js.map": "/squash/static/js/main.228320a0.js.map"
   },
   "entrypoints": [
-    "static/css/main.34f6b942.css",
-    "static/js/main.703cf515.js"
+    "static/css/main.c7a0de4b.css",
+    "static/js/main.228320a0.js"
   ]
 }
