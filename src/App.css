@@ -383,7 +383,7 @@ body {
 .game-board {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
-  padding: 40px;
+  padding: 25px 40px;
   border-radius: 20px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
   text-align: center;
@@ -410,7 +410,7 @@ body {
 }
 
 .match-title {
-  margin-bottom: 40px;
+  margin-bottom: 25px;
   position: relative;
   z-index: 1;
 }
@@ -449,7 +449,7 @@ body {
   justify-content: center;
   align-items: center;
   gap: 40px;
-  margin-bottom: 40px;
+  margin-bottom: 25px;
   position: relative;
   z-index: 1;
 }
@@ -457,7 +457,7 @@ body {
 .player-card {
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);
-  padding: 35px;
+  padding: 25px;
   border-radius: 20px;
   min-width: 220px;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -559,8 +559,8 @@ body {
 }
 
 .score-info {
-  margin-bottom: 30px;
-  padding: 20px;
+  margin-bottom: 20px;
+  padding: 15px;
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);
   border-radius: 16px;
@@ -590,8 +590,8 @@ body {
 }
 
 .score-info-mobile {
-  margin-bottom: 15px;
-  padding: 15px;
+  margin-bottom: 10px;
+  padding: 12px;
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);
   border-radius: 12px;
@@ -841,7 +841,7 @@ body {
 .schedule-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .schedule-item {
@@ -892,6 +892,7 @@ body {
   align-items: center;
   gap: 4px;
   font-size: 12px;
+  min-width: 0;
 }
 
 .match-players .player-label {
@@ -937,8 +938,9 @@ body {
 }
 
 .match-status {
-  min-width: 50px;
+  min-width: 60px;
   text-align: center;
+  flex-shrink: 0;
 }
 
 .current-indicator {
@@ -1277,7 +1279,7 @@ body {
 .current-match-section {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
-  padding: 20px;
+  padding: 15px;
   border-radius: 20px;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
   text-align: center;
@@ -1298,7 +1300,7 @@ body {
 }
 
 .current-match-section .match-title {
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   position: relative;
   z-index: 1;
 }
@@ -1318,7 +1320,7 @@ body {
   justify-content: center;
   align-items: center;
   gap: 15px;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
   position: relative;
   z-index: 1;
 }
@@ -1326,7 +1328,7 @@ body {
 .player-card-mobile {
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);
-  padding: 15px 12px;
+  padding: 12px 10px;
   border-radius: 16px;
   flex: 1;
   max-width: 120px;
@@ -1476,12 +1478,14 @@ body {
 
 /* Mobile Schedule Adjustments */
 .mobile-layout .schedule-item {
-  padding: 6px;
+  padding: 6px 8px;
   font-size: 11px;
+  gap: 6px;
 }
 
 .mobile-layout .match-players {
   font-size: 10px;
+  gap: 3px;
 }
 
 .mobile-layout .match-players .player-name {

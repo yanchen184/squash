@@ -50,7 +50,6 @@ const MatchSchedule = ({ currentMatchIndex, playerNames, matchResults = [] }) =>
               key={index} 
               className={`schedule-item ${isCurrentMatch ? 'current' : ''} ${isPastMatch ? 'completed' : ''} ${!isMatchConfirmed ? 'tbc' : ''}`}
             >
-              <div className="match-number">{index + 1}</div>
               <div className="match-players">
                 <span className={`player-label ${!isMatchConfirmed ? 'tbc-label' : ''}`}>{displayPlayer1}</span>
                 <span className={`player-name ${!isMatchConfirmed ? 'tbc-name' : ''}`}>{player1Name}</span>
