@@ -35,8 +35,8 @@ const GameBoard = ({ currentMatch, playerNames, onPlayerWin, isFinished, playerS
           className={`player-card ${isFinished ? 'disabled' : 'clickable'}`}
           onClick={() => handlePlayerClick(player1)}
         >
-          <div className="player-label">{player1}</div>
-          <div className="player-name">{player1Name}</div>
+          <div className="player-name main-name">{player1Name}</div>
+          <div className="player-label secondary">({player1})</div>
           <div className="player-score">{player1Score} 分</div>
           {!isFinished && <div className="win-hint">點擊選擇勝利者</div>}
         </div>
@@ -49,8 +49,8 @@ const GameBoard = ({ currentMatch, playerNames, onPlayerWin, isFinished, playerS
           className={`player-card ${isFinished ? 'disabled' : 'clickable'}`}
           onClick={() => handlePlayerClick(player2)}
         >
-          <div className="player-label">{player2}</div>
-          <div className="player-name">{player2Name}</div>
+          <div className="player-name main-name">{player2Name}</div>
+          <div className="player-label secondary">({player2})</div>
           <div className="player-score">{player2Score} 分</div>
           {!isFinished && <div className="win-hint">點擊選擇勝利者</div>}
         </div>

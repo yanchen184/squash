@@ -1,7 +1,6 @@
 // History modal component to display game history
 import React, { useState, useEffect } from 'react';
 import { getGameHistory } from '../services/database';
-import { getCurrentMatch } from '../utils/gameLogic';
 
 const HistoryModal = ({ roomCode, onClose }) => {
   const [history, setHistory] = useState(null);
@@ -46,9 +45,22 @@ const HistoryModal = ({ roomCode, onClose }) => {
       .map((match, index) => {
         if (!match || !match.winner) return null;
         
-        const currentMatch = getCurrentMatch(index, history.matches);
         const round = Math.floor(index / 6) + 1;
         const matchInRound = (index % 6) + 1;
+        
+        // 簡化的對戰組合邏輯，基於固定規則
+        let currentMatch;
+        if (matchInRound === 1) {
+          currentMatch = ['A', 'B'];
+        } else if (matchInRound === 2) {
+          currentMatch = ['C', 'D'];
+        } else {
+          // 對於歷史記錄，使用傳統固定順序
+          const traditional = [
+            ['A', 'B'], ['C', 'D'], ['C', 'A'], ['B', 'D'], ['B', 'C'], ['A', 'D']
+          ];
+          currentMatch = traditional[(index % 6)] || ['A', 'B'];
+        }
         
         return {
           index,

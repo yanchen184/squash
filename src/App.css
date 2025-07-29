@@ -519,6 +519,19 @@ body {
   z-index: 1;
 }
 
+.player-name.main-name {
+  font-size: 24px;
+  font-weight: bold;
+  color: #667eea;
+  margin-bottom: 4px;
+}
+
+.player-label.secondary {
+  font-size: 14px;
+  color: #999;
+  margin-bottom: 8px;
+}
+
 .player-score {
   font-size: 24px;
   font-weight: 700;
