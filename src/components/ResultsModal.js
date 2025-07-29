@@ -28,8 +28,11 @@ const ResultsModal = ({ leaderboard, roomCode, onClose }) => {
             <div className="winner-crown">👑</div>
             <h3>恭喜獲勝者！</h3>
             <div className="winner-info">
-              <div className="winner-player">{winner.player}</div>
-              <div className="winner-name">{winner.name}</div>
+              {winner.name && winner.name !== winner.player ? (
+                <div className="winner-name-primary">{winner.name}</div>
+              ) : (
+                <div className="winner-player-primary">{winner.player}</div>
+              )}
               <div className="winner-score">{winner.score} 分</div>
             </div>
           </div>
@@ -41,8 +44,11 @@ const ResultsModal = ({ leaderboard, roomCode, onClose }) => {
                 <div key={entry.player} className="standing-item">
                   <div className="standing-rank">#{index + 1}</div>
                   <div className="standing-player">
-                    <span className="player-label">{entry.player}</span>
-                    <span className="player-name">{entry.name}</span>
+                    {entry.name && entry.name !== entry.player ? (
+                      <span className="player-name-primary">{entry.name}</span>
+                    ) : (
+                      <span className="player-label-primary">{entry.player}</span>
+                    )}
                   </div>
                   <div className="standing-score">{entry.score} 分</div>
                 </div>

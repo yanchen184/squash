@@ -2293,3 +2293,38 @@ body {
   color: #1976d2;
   font-weight: 500;
 }
+
+/* Results and History Modal Primary Display Styles */
+.winner-name-primary,
+.winner-player-primary {
+  font-size: 24px;
+  font-weight: bold;
+  color: #007bff;
+  margin-bottom: 8px;
+}
+
+.player-name-primary {
+  font-size: 16px;
+  font-weight: 600;
+  color: #007bff;
+}
+
+.player-label-primary {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.standing-player .player-name-primary,
+.standing-player .player-label-primary {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.player-info .player-name-primary,
+.player-info .player-label-primary {
+  font-size: 16px;
+  font-weight: 600;
+  color: #007bff;
+}

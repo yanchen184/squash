@@ -237,8 +237,11 @@ const HistoryModal = ({ roomCode, onClose }) => {
                         #{index + 1}
                       </div>
                       <div className="player-info">
-                        <div className="player-label">{player.player}</div>
-                        <div className="player-name">{player.name}</div>
+                        {player.name && player.name !== player.player ? (
+                          <div className="player-name-primary">{player.name}</div>
+                        ) : (
+                          <div className="player-label-primary">{player.player}</div>
+                        )}
                       </div>
                       <div className="score">{player.score} 分</div>
                     </div>
@@ -260,15 +263,21 @@ const HistoryModal = ({ roomCode, onClose }) => {
                     </div>
                     <div className="match-players">
                       <span className={`player ${match.winner === match.player1 ? 'winner' : 'loser'}`}>
-                        {history.players[match.player1]} ({match.player1})
+                        {history.players[match.player1] && history.players[match.player1] !== match.player1 
+                          ? history.players[match.player1] 
+                          : match.player1}
                       </span>
                       <span className="vs">VS</span>
                       <span className={`player ${match.winner === match.player2 ? 'winner' : 'loser'}`}>
-                        {history.players[match.player2]} ({match.player2})
+                        {history.players[match.player2] && history.players[match.player2] !== match.player2 
+                          ? history.players[match.player2] 
+                          : match.player2}
                       </span>
                     </div>
                     <div className="match-result">
-                      勝利者: {history.players[match.winner]} ({match.winner})
+                      勝利者: {history.players[match.winner] && history.players[match.winner] !== match.winner 
+                        ? history.players[match.winner] 
+                        : match.winner}
                     </div>
                   </div>
                 ))}
@@ -283,7 +292,7 @@ const HistoryModal = ({ roomCode, onClose }) => {
                 {Object.entries(playerStats).map(([player, stats]) => (
                   <div key={player} className="player-stat-card">
                     <div className="stat-header">
-                      <h4>{stats.name} ({player})</h4>
+                      <h4>{stats.name && stats.name !== player ? stats.name : player}</h4>
                     </div>
                     <div className="stat-body">
                       <div className="stat-row">
