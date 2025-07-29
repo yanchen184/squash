@@ -189,6 +189,34 @@ export const subscribeToActiveRooms = (callback) => {
 
 // Finish tournament
 export const finishTournament = async (roomCode) => {
+  const roomRef = ref(database, `rooms/${roomCode}`);
+  
+  // Get current room data to save history
+  const roomSnapshot = await get(roomRef);
+  if (!roomSnapshot.exists()) return;
+  
+  const roomData = roomSnapshot.val();
+  
+  // Create history record
+  const historyRecord = {
+    roomId: roomCode,
+    roomName: roomData.host ? `${roomData.host}的房間` : '競賽房間',
+    players: roomData.playerNames || {
+      A: '玩家 A', B: '玩家 B', C: '玩家 C', D: '玩家 D'
+    },
+    finalScores: roomData.scores || { A: 0, B: 0, C: 0, D: 0 },
+    matches: roomData.matches || [],
+    gameStartTime: roomData.createdAt,
+    gameEndTime: Date.now(),
+    totalRounds: Math.ceil((roomData.currentMatch || 0) / 6),
+    version: 'v1.5.0'
+  };
+  
+  // Save to history collection
+  const historyRef = ref(database, `history/${roomCode}_${Date.now()}`);
+  await set(historyRef, historyRecord);
+  
+  // Update room status
   const statusRef = ref(database, `rooms/${roomCode}/status`);
   await set(statusRef, 'finished');
 };
@@ -210,4 +238,53 @@ export const getSystemSettings = async () => {
 export const updateSystemSettings = async (settings) => {
   const settingsRef = ref(database, 'settings');
   await set(settingsRef, settings);
+};
+
+// History operations
+export const getGameHistory = async (roomCode) => {
+  const historyRef = ref(database, 'history');
+  const snapshot = await get(historyRef);
+  
+  if (!snapshot.exists()) return null;
+  
+  const allHistory = snapshot.val();
+  const roomHistory = Object.entries(allHistory)
+    .filter(([key, value]) => key.startsWith(roomCode))
+    .map(([key, value]) => ({ id: key, ...value }))
+    .sort((a, b) => b.gameEndTime - a.gameEndTime);
+  
+  return roomHistory.length > 0 ? roomHistory[0] : null;
+};
+
+export const getAllHistory = async () => {
+  const historyRef = ref(database, 'history');
+  const snapshot = await get(historyRef);
+  
+  if (!snapshot.exists()) return [];
+  
+  const allHistory = snapshot.val();
+  return Object.entries(allHistory)
+    .map(([key, value]) => ({ id: key, ...value }))
+    .sort((a, b) => b.gameEndTime - a.gameEndTime);
+};
+
+export const deleteOldHistory = async (daysOld = 30) => {
+  const historyRef = ref(database, 'history');
+  const snapshot = await get(historyRef);
+  
+  if (!snapshot.exists()) return;
+  
+  const allHistory = snapshot.val();
+  const cutoffTime = Date.now() - (daysOld * 24 * 60 * 60 * 1000);
+  
+  const updates = {};
+  Object.entries(allHistory).forEach(([key, value]) => {
+    if (value.gameEndTime < cutoffTime) {
+      updates[key] = null; // Delete old records
+    }
+  });
+  
+  if (Object.keys(updates).length > 0) {
+    await update(historyRef, updates);
+  }
 };

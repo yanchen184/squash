@@ -1,9 +1,20 @@
 // Results modal component for final tournament results
-import React from 'react';
+import React, { useState } from 'react';
+import HistoryModal from './HistoryModal';
 
 const ResultsModal = ({ leaderboard, roomCode, onClose }) => {
+  const [showHistory, setShowHistory] = useState(false);
   const winner = leaderboard[0];
   
+  if (showHistory) {
+    return (
+      <HistoryModal 
+        roomCode={roomCode} 
+        onClose={() => setShowHistory(false)} 
+      />
+    );
+  }
+
   return (
     <div className="modal-overlay">
       <div className="modal-content results-modal">
@@ -46,6 +57,12 @@ const ResultsModal = ({ leaderboard, roomCode, onClose }) => {
         </div>
 
         <div className="modal-footer">
+          <button 
+            className="cancel-btn" 
+            onClick={() => setShowHistory(true)}
+          >
+            查看歷史記錄
+          </button>
           <button className="primary-btn" onClick={onClose}>
             確定
           </button>

@@ -1,11 +1,27 @@
 // Room creator component
 import React, { useState } from 'react';
-import { createRoom } from '../services/database';
+import { createRoom, updatePlayerNames } from '../services/database';
 import { generateRoomCode } from '../utils/gameLogic';
 
 const RoomCreator = ({ onClose, onRoomCreated }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState('');
+  const [playerNames, setPlayerNames] = useState({
+    A: '',
+    B: '',
+    C: '',
+    D: ''
+  });
+
+  const handlePlayerNameChange = (position, name) => {
+    if (name.length <= 8) {
+      setPlayerNames(prev => ({
+        ...prev,
+        [position]: name
+      }));
+    }
+  };
+
 
   const handleCreateRoom = async () => {
     setIsCreating(true);
@@ -14,6 +30,16 @@ const RoomCreator = ({ onClose, onRoomCreated }) => {
     try {
       const roomCode = generateRoomCode();
       await createRoom(roomCode, 'Host');
+      
+      // Update player names if any were provided
+      const finalPlayerNames = {
+        A: playerNames.A || '玩家 A', 
+        B: playerNames.B || '玩家 B',
+        C: playerNames.C || '玩家 C',
+        D: playerNames.D || '玩家 D'
+      };
+      
+      await updatePlayerNames(roomCode, finalPlayerNames);
       onRoomCreated(roomCode);
     } catch (err) {
       setError('創建房間失敗，請重試');
@@ -35,6 +61,59 @@ const RoomCreator = ({ onClose, onRoomCreated }) => {
           <div className="create-room-info">
             <p>將創建一個新的 4 人壁球競賽房間</p>
             <p>特殊規則：第1-2場固定，第3場贏家組對戰，第4場輸家組對戰</p>
+          </div>
+
+          <div className="player-names-section">
+            <h3>設定玩家名字 (選填)</h3>
+            <div className="player-inputs">
+              <div className="player-input-group">
+                <label>位置 A:</label>
+                <input
+                  type="text"
+                  value={playerNames.A}
+                  onChange={(e) => handlePlayerNameChange('A', e.target.value)}
+                  placeholder="玩家 A"
+                  maxLength="8"
+                  disabled={isCreating}
+                />
+              </div>
+              <div className="player-input-group">
+                <label>位置 B:</label>
+                <input
+                  type="text"
+                  value={playerNames.B}
+                  onChange={(e) => handlePlayerNameChange('B', e.target.value)}
+                  placeholder="玩家 B"
+                  maxLength="8"
+                  disabled={isCreating}
+                />
+              </div>
+              <div className="player-input-group">
+                <label>位置 C:</label>
+                <input
+                  type="text"
+                  value={playerNames.C}
+                  onChange={(e) => handlePlayerNameChange('C', e.target.value)}
+                  placeholder="玩家 C"
+                  maxLength="8"
+                  disabled={isCreating}
+                />
+              </div>
+              <div className="player-input-group">
+                <label>位置 D:</label>
+                <input
+                  type="text"
+                  value={playerNames.D}
+                  onChange={(e) => handlePlayerNameChange('D', e.target.value)}
+                  placeholder="玩家 D"
+                  maxLength="8"
+                  disabled={isCreating}
+                />
+              </div>
+            </div>
+            <div className="input-hint">
+              * 留空將使用預設名字，最多 8 個字符
+            </div>
           </div>
 
           {error && <div className="error-message">{error}</div>}

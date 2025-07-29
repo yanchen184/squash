@@ -1,12 +1,11 @@
 // Match schedule component showing dynamic match order
 import React from 'react';
-import { getCurrentMatchOrder, getRoundNumber, getMatchInRound, getPlayerRotationInfo } from '../utils/gameLogic';
+import { getCurrentMatchOrder, getRoundNumber, getMatchInRound } from '../utils/gameLogic';
 
 const MatchSchedule = ({ currentMatchIndex, playerNames, matchResults = [] }) => {
   const currentMatchOrder = getCurrentMatchOrder(matchResults, currentMatchIndex);
   const currentRound = getRoundNumber(currentMatchIndex);
   const matchInRound = getMatchInRound(currentMatchIndex) - 1; // Convert to 0-based index
-  const rotationInfo = getPlayerRotationInfo(currentRound);
   
   // Get results for current round to check confirmation status
   const roundStartIndex = (currentRound - 1) * 6;

@@ -1,7 +1,7 @@
 // Main game room component
 import React, { useState, useEffect } from 'react';
 import { subscribeToRoom, recordMatchResult, finishTournament, updateRoomStatus, undoLastMatch } from '../services/database';
-import { getCurrentMatch, getCurrentMatchOrder, getRoundNumber, getMatchInRound, getLeaderboard } from '../utils/gameLogic';
+import { getCurrentMatch, getRoundNumber, getMatchInRound, getLeaderboard } from '../utils/gameLogic';
 import GameBoard from './GameBoard';
 import Leaderboard from './Leaderboard';
 import MatchSchedule from './MatchSchedule';
@@ -44,7 +44,6 @@ const GameRoom = ({ roomCode, onLeaveRoom }) => {
     const currentMatchIndex = data.currentMatch || 0;
     const matches = data.matches || [];
     const match = getCurrentMatch(currentMatchIndex, matches);
-    const currentMatchOrder = getCurrentMatchOrder(matches, currentMatchIndex);
     const round = getRoundNumber(currentMatchIndex);
     const matchInCurrentRound = getMatchInRound(currentMatchIndex);
     const currentScores = data.scores || { A: 0, B: 0, C: 0, D: 0 };
