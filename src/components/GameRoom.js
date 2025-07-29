@@ -129,7 +129,6 @@ const GameRoom = ({ roomCode, onLeaveRoom }) => {
                   onClick={() => handlePlayerWin(currentMatch[0])}
                 >
                   <div className="player-name main-name">{roomData.playerNames?.[currentMatch[0]] || currentMatch[0]}</div>
-                  <div className="player-label secondary">({currentMatch[0]})</div>
                   <div className="player-score">{roomData.scores?.[currentMatch[0]] || 0} 分</div>
                   {!isFinished && <div className="win-hint">點擊選擇勝利者</div>}
                 </div>
@@ -143,7 +142,6 @@ const GameRoom = ({ roomCode, onLeaveRoom }) => {
                   onClick={() => handlePlayerWin(currentMatch[1])}
                 >
                   <div className="player-name main-name">{roomData.playerNames?.[currentMatch[1]] || currentMatch[1]}</div>
-                  <div className="player-label secondary">({currentMatch[1]})</div>
                   <div className="player-score">{roomData.scores?.[currentMatch[1]] || 0} 分</div>
                   {!isFinished && <div className="win-hint">點擊選擇勝利者</div>}
                 </div>
@@ -200,7 +198,7 @@ const GameRoom = ({ roomCode, onLeaveRoom }) => {
           <footer className="game-footer">
             <div className="room-info-mobile">
               <div className="room-code-mobile">房間: {roomCode}</div>
-              <div className="version-info">v1.5.0</div>
+              <div className="version-info">v1.7.0</div>
               <div className="round-info-mobile">
                 第 {roundNumber} 輪 - 比賽 {matchInRound}/6
               </div>
@@ -237,7 +235,7 @@ const GameRoom = ({ roomCode, onLeaveRoom }) => {
           <header className="game-header">
             <div className="room-info">
               <h1>房間: {roomCode}</h1>
-              <div className="version-info">v1.5.0</div>
+              <div className="version-info">v1.7.0</div>
             </div>
             <div className="game-progress">
               <div className="round-info">

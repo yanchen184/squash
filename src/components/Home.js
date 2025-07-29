@@ -3,11 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { subscribeToActiveRooms } from '../services/database';
 import RoomCreator from './RoomCreator';
 import Settings from './Settings';
+import GlobalHistoryModal from './GlobalHistoryModal';
 
 const Home = ({ onJoinRoom }) => {
   const [activeRooms, setActiveRooms] = useState([]);
   const [showSettings, setShowSettings] = useState(false);
   const [showRoomCreator, setShowRoomCreator] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
 
   useEffect(() => {
     // Subscribe to active rooms
@@ -27,7 +29,7 @@ const Home = ({ onJoinRoom }) => {
     <div className="home-container">
       <header className="app-header">
         <h1>計分賽程競技系統</h1>
-        <div className="version-info">v1.0.5</div>
+        <div className="version-info">v1.7.0</div>
         <button 
           className="settings-btn"
           onClick={() => setShowSettings(true)}
@@ -44,6 +46,12 @@ const Home = ({ onJoinRoom }) => {
             onClick={() => setShowRoomCreator(true)}
           >
             創建房間
+          </button>
+          <button 
+            className="cancel-btn"
+            onClick={() => setShowHistory(true)}
+          >
+            📊 歷史記錄
           </button>
         </div>
 
@@ -86,6 +94,10 @@ const Home = ({ onJoinRoom }) => {
 
       {showSettings && (
         <Settings onClose={() => setShowSettings(false)} />
+      )}
+
+      {showHistory && (
+        <GlobalHistoryModal onClose={() => setShowHistory(false)} />
       )}
     </div>
   );

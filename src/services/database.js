@@ -209,7 +209,7 @@ export const finishTournament = async (roomCode) => {
     gameStartTime: roomData.createdAt,
     gameEndTime: Date.now(),
     totalRounds: Math.ceil((roomData.currentMatch || 0) / 6),
-    version: 'v1.5.0'
+    version: 'v1.7.0'
   };
   
   // Save to history collection
@@ -227,10 +227,10 @@ export const getSystemSettings = async () => {
   const snapshot = await get(settingsRef);
   return snapshot.exists() ? snapshot.val() : {
     defaultPlayerNames: {
-      A: '玩家 A',
-      B: '玩家 B',
-      C: '玩家 C', 
-      D: '玩家 D'
+      A: 'white',
+      B: 'bob',
+      C: 'jimmy', 
+      D: 'dada'
     }
   };
 };

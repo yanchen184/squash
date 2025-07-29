@@ -33,10 +33,10 @@ const RoomCreator = ({ onClose, onRoomCreated }) => {
       
       // Update player names if any were provided
       const finalPlayerNames = {
-        A: playerNames.A || '玩家 A', 
-        B: playerNames.B || '玩家 B',
-        C: playerNames.C || '玩家 C',
-        D: playerNames.D || '玩家 D'
+        A: playerNames.A || 'white', 
+        B: playerNames.B || 'bob',
+        C: playerNames.C || 'jimmy',
+        D: playerNames.D || 'dada'
       };
       
       await updatePlayerNames(roomCode, finalPlayerNames);
@@ -72,7 +72,7 @@ const RoomCreator = ({ onClose, onRoomCreated }) => {
                   type="text"
                   value={playerNames.A}
                   onChange={(e) => handlePlayerNameChange('A', e.target.value)}
-                  placeholder="玩家 A"
+                  placeholder="white"
                   maxLength="8"
                   disabled={isCreating}
                 />
@@ -83,7 +83,7 @@ const RoomCreator = ({ onClose, onRoomCreated }) => {
                   type="text"
                   value={playerNames.B}
                   onChange={(e) => handlePlayerNameChange('B', e.target.value)}
-                  placeholder="玩家 B"
+                  placeholder="bob"
                   maxLength="8"
                   disabled={isCreating}
                 />
@@ -94,7 +94,7 @@ const RoomCreator = ({ onClose, onRoomCreated }) => {
                   type="text"
                   value={playerNames.C}
                   onChange={(e) => handlePlayerNameChange('C', e.target.value)}
-                  placeholder="玩家 C"
+                  placeholder="jimmy"
                   maxLength="8"
                   disabled={isCreating}
                 />
@@ -105,7 +105,7 @@ const RoomCreator = ({ onClose, onRoomCreated }) => {
                   type="text"
                   value={playerNames.D}
                   onChange={(e) => handlePlayerNameChange('D', e.target.value)}
-                  placeholder="玩家 D"
+                  placeholder="dada"
                   maxLength="8"
                   disabled={isCreating}
                 />

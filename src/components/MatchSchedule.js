@@ -28,10 +28,13 @@ const MatchSchedule = ({ currentMatchIndex, playerNames, matchResults = [] }) =>
           // Check if this match is confirmed or needs TBC
           const isMatchConfirmed = index < 2 || (roundResults && roundResults.length >= 2);
           
+          // 優先顯示玩家名稱，若為空值才顯示 A B C D
           const player1Name = isMatchConfirmed ? (playerNames?.[player1] || player1) : 'TBC';
           const player2Name = isMatchConfirmed ? (playerNames?.[player2] || player2) : 'TBC';
-          const displayPlayer1 = isMatchConfirmed ? player1 : 'TBC';
-          const displayPlayer2 = isMatchConfirmed ? player2 : 'TBC';
+          
+          // 檢查是否有自定義名稱，沒有才顯示標籤
+          const hasPlayer1Name = playerNames?.[player1] && playerNames[player1] !== player1;
+          const hasPlayer2Name = playerNames?.[player2] && playerNames[player2] !== player2;
           
           // Add special labels for matches 3 and 4
           let matchLabel = '';
@@ -50,11 +53,25 @@ const MatchSchedule = ({ currentMatchIndex, playerNames, matchResults = [] }) =>
               className={`schedule-item ${isCurrentMatch ? 'current' : ''} ${isPastMatch ? 'completed' : ''} ${!isMatchConfirmed ? 'tbc' : ''}`}
             >
               <div className="match-players">
-                <span className={`player-label ${!isMatchConfirmed ? 'tbc-label' : ''}`}>{displayPlayer1}</span>
-                <span className={`player-name ${!isMatchConfirmed ? 'tbc-name' : ''}`}>{player1Name}</span>
+                {isMatchConfirmed ? (
+                  hasPlayer1Name ? (
+                    <span className="player-name">{player1Name}</span>
+                  ) : (
+                    <span className="player-label">{player1}</span>
+                  )
+                ) : (
+                  <span className="tbc-label">TBC</span>
+                )}
                 <span className="vs">vs</span>
-                <span className={`player-label ${!isMatchConfirmed ? 'tbc-label' : ''}`}>{displayPlayer2}</span>
-                <span className={`player-name ${!isMatchConfirmed ? 'tbc-name' : ''}`}>{player2Name}</span>
+                {isMatchConfirmed ? (
+                  hasPlayer2Name ? (
+                    <span className="player-name">{player2Name}</span>
+                  ) : (
+                    <span className="player-label">{player2}</span>
+                  )
+                ) : (
+                  <span className="tbc-label">TBC</span>
+                )}
                 {matchLabel && <span className={`match-label ${labelClass}`}>({matchLabel})</span>}
               </div>
               <div className="match-status">
