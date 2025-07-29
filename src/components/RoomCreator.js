@@ -6,6 +6,7 @@ import { generateRoomCode } from '../utils/gameLogic';
 const RoomCreator = ({ onClose, onRoomCreated }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState('');
+  const [roomName, setRoomName] = useState('');
   const [playerNames, setPlayerNames] = useState({
     A: '',
     B: '',
@@ -29,7 +30,7 @@ const RoomCreator = ({ onClose, onRoomCreated }) => {
 
     try {
       const roomCode = generateRoomCode();
-      await createRoom(roomCode, 'Host');
+      await createRoom(roomCode, 'Host', roomName);
       
       // Update player names if any were provided
       const finalPlayerNames = {
@@ -61,6 +62,23 @@ const RoomCreator = ({ onClose, onRoomCreated }) => {
           <div className="create-room-info">
             <p>將創建一個新的 4 人壁球競賽房間</p>
             <p>特殊規則：第1-2場固定，第3場贏家組對戰，第4場輸家組對戰</p>
+          </div>
+
+          <div className="room-name-section">
+            <h3>房間名稱 (選填)</h3>
+            <div className="room-name-input">
+              <input
+                type="text"
+                value={roomName}
+                onChange={(e) => setRoomName(e.target.value)}
+                placeholder="留空將使用時間作為房間名稱"
+                maxLength="20"
+                disabled={isCreating}
+              />
+            </div>
+            <div className="input-hint">
+              * 最多 20 個字符，留空自動使用創建時間
+            </div>
           </div>
 
           <div className="player-names-section">

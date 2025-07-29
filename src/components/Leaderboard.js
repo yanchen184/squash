@@ -20,8 +20,11 @@ const Leaderboard = ({ leaderboard, isFinished }) => {
               {index === 0 && isFinished && <span className="crown">👑</span>}
             </div>
             <div className="player-info">
-              <div className="player-label">{entry.player}</div>
-              <div className="player-name">{entry.name}</div>
+              {entry.name && entry.name !== entry.player ? (
+                <div className="player-name main-display">{entry.name}</div>
+              ) : (
+                <div className="player-label main-display">{entry.player}</div>
+              )}
             </div>
             <div className="score">{entry.score}</div>
           </div>

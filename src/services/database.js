@@ -3,13 +3,24 @@ import { database } from './firebase';
 import { ref, set, get, onValue, serverTimestamp, off, update } from 'firebase/database';
 
 // Room operations
-export const createRoom = async (roomCode, hostName) => {
+export const createRoom = async (roomCode, hostName, roomName = '') => {
   // Get system settings first
   const settings = await getSystemSettings();
   const roomRef = ref(database, `rooms/${roomCode}`);
+  
+  // Generate room name if not provided
+  const finalRoomName = roomName.trim() || new Date().toLocaleString('zh-TW', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  }) + ' 的比賽';
+  
   const roomData = {
     code: roomCode,
     host: hostName,
+    roomName: finalRoomName,
     status: 'waiting', // waiting, playing, finished
     createdAt: serverTimestamp(),
     currentMatch: 0,
@@ -200,7 +211,7 @@ export const finishTournament = async (roomCode) => {
   // Create history record
   const historyRecord = {
     roomId: roomCode,
-    roomName: roomData.host ? `${roomData.host}的房間` : '競賽房間',
+    roomName: roomData.roomName || (roomData.host ? `${roomData.host}的房間` : '競賽房間'),
     players: roomData.playerNames || {
       A: '玩家 A', B: '玩家 B', C: '玩家 C', D: '玩家 D'
     },
