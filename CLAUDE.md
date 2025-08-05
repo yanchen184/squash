@@ -345,6 +345,241 @@ src/
 
 ---
 
-*文檔版本*：v1.1  
-*最後更新*：2025-07-29  
+## 🔧 程式碼優化分析與改進計畫
+
+### 📊 優化分析總覽 (2025-08-05)
+
+透過 Gemini 深度分析，識別出當前專案從 MVP 到生產就緒應用的關鍵優化點。分析涵蓋架構設計、效能優化、安全性、程式碼品質、用戶體驗和擴展性六大面向。
+
+### 🔴 最高優先級改進項目
+
+#### 1. 專案結構整理
+**問題**：混合 CRA 和 Vite 慣例導致構建配置不一致
+- `App.jsx`：Vite 預設模板檔案（需刪除）
+- `main.jsx`：實際入口點但不符合 CRA 慣例
+- `App.js`：真正的應用邏輯檔案
+
+**解決方案**：
+- 刪除 `src/App.jsx`（Vite 殘留）
+- 重新命名 `src/main.jsx` → `src/index.jsx` 
+- 重新命名 `src/App.js` → `src/App.jsx`
+- 統一採用 CRA 標準結構
+
+#### 2. Firebase 安全性強化
+**問題**：API 金鑰直接暴露在程式碼中
+- `firebase.js` 中硬編碼配置資訊
+- 缺乏應用程式驗證機制
+- 可能存在安全規則漏洞
+
+**解決方案**：
+```javascript
+// .env.local
+REACT_APP_API_KEY="AIzaSyC..."
+REACT_APP_AUTH_DOMAIN="squash-72502.firebaseapp.com"
+REACT_APP_DATABASE_URL="https://squash-72502-default-rtdb.firebaseio.com"
+// ... 其他配置
+
+// firebase.js
+const firebaseConfig = {
+  apiKey: process.env.REACT_APP_API_KEY,
+  authDomain: process.env.REACT_APP_AUTH_DOMAIN,
+  // ...
+};
+```
+
+**進階安全措施**：
+- 實作 Firebase Security Rules 細粒度權限控制
+- 導入 Firebase App Check + reCAPTCHA v3 防止濫用
+- 成本效益：免費且零用戶體驗影響
+
+#### 3. 路由架構重構
+**問題**：刷新頁面會丟失房間狀態
+- 使用 `useState` 進行頁面切換而非真實路由
+- 無法分享房間連結
+- 用戶體驗不佳
+
+**解決方案**：
+```javascript
+// App.jsx
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+
+function App() {
+  return (
+    <BrowserRouter basename="/squash">
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/room/:roomCode" element={<GameRoom />} />
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+```
+
+**邊緣情況處理**：
+- 不存在的房間：顯示錯誤並導向首頁
+- 過期房間：檢查 24 小時有效期
+- 權限錯誤：優雅的錯誤處理
+- 多標籤頁：Firebase 自動同步狀態
+
+### 🟡 中高優先級改進項目
+
+#### 4. 效能優化 - 細粒度監聽
+**問題**：監聽整個房間物件導致不必要的重新渲染
+```javascript
+// 現況：任何變更都會觸發全組件重新渲染
+subscribeToRoom(roomCode, callback) // 監聽整個 rooms/{roomCode}
+```
+
+**優化方案**：使用選擇器模式
+```javascript
+// 新架構：使用 useSyncExternalStore
+function createGameStore(roomCode) {
+  let state = {};
+  const listeners = new Set();
+
+  const unsubscribes = [
+    onValue(ref(db, `rooms/${roomCode}/players`), (snap) => {
+      state = { ...state, players: snap.val() };
+      listeners.forEach((l) => l());
+    }),
+    onValue(ref(db, `rooms/${roomCode}/matches`), (snap) => {
+      state = { ...state, matches: snap.val() };
+      listeners.forEach((l) => l());
+    }),
+  ];
+
+  return {
+    subscribe(listener) {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+    getSnapshot() { return state; },
+    cleanup() { unsubscribes.forEach(unsub => unsub()); }
+  };
+}
+
+// 組件中使用
+const players = useGameStore((state) => state.players);
+```
+
+**效益**：
+- 只有相關組件在數據變更時重新渲染
+- Firebase SDK 在單一 WebSocket 上多工處理
+- 大幅提升複雜互動場景的效能
+
+#### 5. 元件架構重構
+**問題**：GameRoom.js 成為 "God Component"（315行）
+- 管理過多職責：數據獲取、狀態更新、UI 邏輯、響應式處理
+- 難以維護和測試
+- Prop drilling 問題嚴重
+
+**解決方案**：
+- 建立 `RoomContext` 提供狀態管理
+- 拆分為 `GameRoomMobileView` 和 `GameRoomDesktopView`
+- 子組件直接使用 `useContext` 取得數據
+- 採用 CSS Modules 避免樣式衝突
+
+### 🟢 中等優先級改進項目
+
+#### 6. 程式碼品質提升
+**重複邏輯提取**：
+```javascript
+// 自定義 Hook 範例
+export const useMatchScoreInfo = (scores, player1, player2, playerNames) => {
+  return useMemo(() => {
+    const p1Score = scores?.[player1] || 0;
+    const p2Score = scores?.[player2] || 0;
+    const difference = Math.abs(p1Score - p2Score);
+    const leadingPlayer = p1Score > p2Score ? (playerNames?.[player1] || player1) : 
+                          p2Score > p1Score ? (playerNames?.[player2] || player2) : null;
+    return { p1Score, p2Score, difference, leadingPlayer };
+  }, [scores, player1, player2, playerNames]);
+};
+```
+
+**測試策略**：
+- 從 `utils/gameLogic.js` 開始建立單元測試
+- 將 `rotationTest.js` 改寫為 Jest 測試用例
+- 逐步擴展到組件整合測試
+
+#### 7. 用戶體驗改善
+**統一通知系統**：
+- 引入輕量級 toast 通知（如 `react-hot-toast`）
+- 取代侵入性的 `alert()` 
+- 建立一致的錯誤反饋機制
+
+**樂觀更新**：
+- 操作立即更新本地 UI
+- 失敗時回滾狀態
+- 提升應用反應速度
+
+### 🔮 長期擴展規劃
+
+#### 8. 架構擴展準備
+**服務模組化**：
+```
+src/services/
+├── roomService.js      # 房間管理
+├── historyService.js   # 歷史記錄（已存在）
+├── settingsService.js  # 系統設定
+└── userService.js      # 未來用戶系統
+```
+
+**遊戲邏輯抽象化**：
+- 策略模式支援多種賽制
+- 為錦標賽模式預留擴展空間
+
+#### 9. 技術債務處理
+**TypeScript 遷移**：
+- 新檔案採用 `.ts/.tsx`
+- 為數據結構定義 `interface`
+- 逐步遷移現有組件
+
+### 📈 實施策略與優先順序
+
+**Phase 1 (Week 1-2)：基礎架構穩固**
+1. 清理專案結構混亂
+2. 實作 Firebase 安全性改進
+3. 導入 React Router 路由系統
+
+**Phase 2 (Week 3-4)：效能與架構優化**
+1. 細粒度 Firebase 監聽器重構
+2. GameRoom 組件拆分與 Context 實作
+3. CSS Modules 遷移
+
+**Phase 3 (Week 5-6)：品質與體驗提升**
+1. 單元測試建立
+2. 統一錯誤處理與通知系統
+3. 用戶體驗細節優化
+
+### 🎯 成功指標
+
+**技術指標**：
+- 構建時間縮短 20%
+- 頁面重新渲染次數減少 60%
+- 程式碼覆蓋率達到 70%
+
+**用戶體驗指標**：
+- 頁面刷新不再丟失狀態
+- 操作反應時間提升 50%
+- 錯誤處理更加友善
+
+**安全性指標**：
+- Firebase Security Rules 覆蓋所有資料路徑
+- App Check 攔截非法存取
+- 敏感資料不再暴露於程式碼中
+
+### 📝 技術決策記錄
+
+**關鍵決策理由**：
+1. **Firebase 前端金鑰暴露**：正常設計模式，真正安全來自 Security Rules
+2. **URL 狀態重載 vs localStorage**：前者確保資料一致性，後者可能過期
+3. **細粒度監聽 ROI**：Firebase SDK 單一連線多工，效能提升顯著
+4. **現代 React 模式**：`useSyncExternalStore` 是處理外部狀態的最佳實踐
+
+---
+
+*文檔版本*：v1.2  
+*最後更新*：2025-08-05  
 *負責人*：White/Claude 協作開發團隊
