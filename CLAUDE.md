@@ -345,6 +345,67 @@ src/
 
 ---
 
+### 📱 iOS APP 化計畫 — Capacitor 包殼 (2026-06-19 立，待 Mac 執行)
+
+> **決策**：走 **Capacitor 包殼**（現有 React 程式幾乎原封不動，套原生殼編成 iOS app），不重寫成 React Native。
+> **目標場景**：不上架商店，只給「我們幾個人」的 iPhone 安裝使用。
+> **執行環境**：**必須在 macOS + Xcode 上做**（iOS 編譯/簽名只能在 Mac）。本計畫在 Windows 上立，待切到 Mac 繼續。
+
+#### ⚠️ iOS 散佈的現實限制（先懂再做）
+
+iOS 不像 Android 能直接傳 `.apk` 給人雙擊安裝。要在別人 iPhone 跑，只有：
+
+| 方式 | 需要 | 適用 |
+|---|---|---|
+| **Xcode 直連簽名** | Mac + 用線接每支 iPhone + 免費 Apple ID | 人在旁邊；**免費簽名 7 天過期**要重簽 |
+| **TestFlight**（推薦給朋友群） | **Apple Developer 帳號 $99/年** | 遠端發測試版給最多 100 人，最順 |
+| **Ad Hoc** | $99/年 + 蒐集每支 iPhone UDID | 綁定特定裝置，較麻煩 |
+
+→ 「幾個人自己用」最務實：短期用 **Xcode 直連**（免費，但 7 天要重簽）；要長期穩定遠端發 → **TestFlight（$99/年）**。
+
+#### 🛠️ Mac 上執行步驟（照抄）
+
+前置：Mac 已裝 Xcode（App Store）、Node、CocoaPods（`sudo gem install cocoapods` 或 `brew install cocoapods`）。
+
+```bash
+# 1. 在專案根目錄安裝 Capacitor
+npm install @capacitor/core @capacitor/cli @capacitor/ios
+
+# 2. 初始化（appId 用反向網域，appName 自取）
+npx cap init "Squash" "com.bobchen.squash" --web-dir=build
+
+# 3. 先建 web 產物（CRA）
+npm run build   # = cross-env CI=false react-scripts build，產出 build/
+
+# 4. 加 iOS 平台 + 同步 build/ 進原生殼
+npx cap add ios
+npx cap sync ios
+
+# 5. 開 Xcode
+npx cap open ios
+```
+
+Xcode 內：
+1. 左側選 **App target → Signing & Capabilities**，Team 選你的 Apple ID（免費也行），Bundle Identifier 確認 = `com.bobchen.squash`
+2. iPhone 用線接上 Mac，頂部裝置選你的 iPhone
+3. 按 ▶ Run → app 裝進手機（首次要在 iPhone「設定 → 一般 → VPN 與裝置管理」信任開發者憑證）
+
+之後改前端：`npm run build && npx cap sync ios` 再到 Xcode Run。
+
+#### 📝 要注意的點（這專案特有）
+
+- **路由**：已用 `HashRouter`（`App.js`），Capacitor 用 `file://` 載入時 hash 路由可正常運作 — **不要改回 BrowserRouter**，否則 app 內路由會壞。
+- **`homepage` 欄位**：`package.json` 現為 `https://yanchen184.github.io/squash`。GitHub Pages 部署要它；但 Capacitor 打包時資源路徑要相對。若 app 內白畫面，檢查 `build/index.html` 的資源路徑，必要時打包前暫時移除 `homepage` 或設為 `"."`。
+- **Firebase**：用的是 RTDB REST/WebSocket，Capacitor WebView 直接連得到，無需改 config。但 **app 化後 DB 全開的風險更明顯** → 見下方「待補：Firebase Security Rules」。
+- **`.gitignore`**：`ios/` 資料夾（Capacitor 產生的原生專案）要不要進 git 自行決定；`ios/App/Pods/` 與 build 產物應 ignore。
+
+#### 🔗 連帶待辦（不分平台都該補）
+
+- **🔴 Firebase Security Rules**：專案目前**沒有** `database.rules.json` / `firebase.json`，RTDB 很可能跑在預設/全開規則，任何人拿到 databaseURL 就能讀寫整個 DB。APP 化會把這風險放大（更多人裝、流量更明顯）。上線/發朋友前**務必補規則**鎖住 `rooms`/`history`/`settings` 的讀寫。
+- `database.js` 殘留 6 處 `console.log`（`recordMatchResult`）、`rotationTest.js` / `TestTBC.js` 開發殘留可清。
+
+---
+
 ### 讓分 + Tie-break + 統計 + 路由 + 測試 (2026-06-19)
 
 > 對應 commit：`8bc75dc`（路由）、`4ca112e`（核心功能）、`5eef215`（rebuild/版號）、`b7b473b`（單元測試）、`0ec0828`（整合測試）。本批同時修正了賽制模型的核心誤解。
