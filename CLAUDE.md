@@ -345,6 +345,75 @@ src/
 
 ---
 
+### 讓分 + Tie-break + 統計 + 路由 + 測試 (2026-06-19)
+
+> 對應 commit：`8bc75dc`（路由）、`4ca112e`（核心功能）、`5eef215`（rebuild/版號）、`b7b473b`（單元測試）、`0ec0828`（整合測試）。本批同時修正了賽制模型的核心誤解。
+
+#### 🟥 賽制模型修正（影響所有計分邏輯）
+
+舊版把 `currentMatch / 6` 當成「round」是錯的。正確模型固定為：
+
+- 1 場 = 7 分制
+- **1 輪 = 6 場**（4 人全 pair 各打 1 次）
+- **1 round = 3 輪 = 18 場**（約 1 小時）
+- **整場 = 2 round = 36 場**（約 2 小時）
+- **每 round 分數獨立歸零計算**：Round 2 從 0 開始累計，各自決定 1/2/3/4 名
+- 36 場為上限，第 36 場後阻擋繼續點
+
+常數集中在 `src/utils/rankingLogic.js`：`MATCHES_PER_SUBROUND=6`、`MATCHES_PER_ROUND=18`、`TOTAL_ROUNDS=2`、`TOTAL_MATCHES=36`。
+
+#### ✅ 新增功能
+
+**1. 讓分（handicap）系統**
+- 每場開打前依「當下這 round 的累積場勝差」計算：領先方讓對手 N 分（差幾場讓幾分）
+- `calculateHandicap(cumulativeScores, p1, p2)` → `{ giver, receiver, amount }`
+- `recordMatchResult` 把讓分寫進該場 match 物件，供統計與 tie-break 反查
+
+**2. Tie-break 規則引擎（`src/utils/rankingLogic.js`）**
+- Round 1 末 2 人同分 → 用 Round 2 第一次交手結果
+- Round 1 末 3 人同分 → 用 Round 2 第 1 輪這 3 人 H2H
+- Round 2 末 2/3 人同分 → 用 Round 2 第 3 輪對應交手 / H2H
+- H2H 均等 → 比累積得分（deuce 視 8:6）→ 被讓分多的輸 → 仍平則猜拳（`needsRps`）
+- `computeRoundRanking(matches, round)` 回傳 `{ ranking:[{rank,player,score,tied}], audit, needsRps, hasUnresolvedTie, scores }`
+
+**3. Round 結算窗（`SettlementModal.js`）**
+- 每 round 結束顯示排名 + tie-break 細節 + H2H 明細表
+- 純 props 組件（不碰 Firebase），便於測試
+
+**4. 智能比分輸入**
+- `shouldCollectScore(matchIndex, matches, scores)`：模擬剩餘對局，只有真的可能影響 tie-break 才彈出比分面板，平時直接點勝負即可
+
+**5. 隨機起始排列**
+- `generateRandomPermutation(avoidFirstPair)`：Round 1/2 起始 pair 隨機化
+- Round 2 起始排列在第 17 場（Round 1 最後一場）記錄完才生成，且首對 pair ≠ Round 1 最後一場（防重複）
+
+**6. 歷史統計面板（`StatsModal.js` + `src/utils/statsLogic.js`）**
+- 勝率、平均名次、名次分布、平均讓分 / 被讓分
+- 當天 / 月 / 季 / 年 / 最久 時間範圍篩選（`RANGE_LABELS`）
+- 個人對戰明細（`getPlayerOpponentStats`）
+- 歷史明細顯示 Round 1/2 獨立排名（含 tie-break）
+
+**7. 規則展開面板（`RulesPanel.js`）**
+
+**8. 路由重構（`8bc75dc`）**
+- 導入 `HashRouter`：`/` → Home、`/room/:roomCode` → GameRoom、`*` → 導回首頁
+- 清理 Vite 殘留（`App.jsx`/`main.jsx`/`vite.config.js` 等）
+
+**9. 手機版補強**
+- 比分輸入面板、明細表橫向 scroll、modal RWD
+
+#### 🔧 Bug 修復
+- Settlement modal stale closure 導致重複跳出
+- 最終排名 0 分 bug（clamp userRound）
+- 第 36 場後跳過舊版 ResultsModal
+
+#### 🧪 測試（本專案首次有測試）
+- **單元測試（`b7b473b`，49 tests）**：`gameLogic.test.js`（21）、`rankingLogic.test.js`（19）、`statsLogic.test.js`（9）涵蓋排列、輪動、計分、讓分、tie-break、統計純函式
+- **整合測試（`0ec0828`，6 tests）**：`src/services/tournament.integration.test.js` 驅動完整 36 場賽事走真實生產路徑（gameLogic 排程 → `database.recordMatchResult` 計分 → rankingLogic tie-break → `finishTournament`/`getAllHistory` → statsLogic 聚合），Firebase 讀寫由 in-memory mock（`src/services/__mocks__/firebaseMock.js`）承接。driver 複製 `GameRoom.js` 每場真實 payload（pair + handicap + 條件式比分），端到端驗證分數總和、Round 2 排列觸發 + 防重複、每 round 排名和、讓分一致性、history→stats 聚合
+- 執行：`npm run test:ci`（= `cross-env CI=true react-scripts test`），共 **55 tests pass**
+
+---
+
 ## 🔧 程式碼優化分析與改進計畫
 
 ### 📊 優化分析總覽 (2025-08-05)
