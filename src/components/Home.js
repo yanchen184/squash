@@ -1,15 +1,19 @@
 // Home page component - room creation and joining
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { subscribeToActiveRooms } from '../services/database';
 import RoomCreator from './RoomCreator';
 import Settings from './Settings';
 import GlobalHistoryModal from './GlobalHistoryModal';
 
-const Home = ({ onJoinRoom }) => {
+const Home = () => {
+  const navigate = useNavigate();
   const [activeRooms, setActiveRooms] = useState([]);
   const [showSettings, setShowSettings] = useState(false);
   const [showRoomCreator, setShowRoomCreator] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+
+  const joinRoom = (roomCode) => navigate(`/room/${roomCode}`);
 
   useEffect(() => {
     // Subscribe to active rooms
@@ -22,7 +26,7 @@ const Home = ({ onJoinRoom }) => {
 
   const handleRoomCreated = (roomCode) => {
     setShowRoomCreator(false);
-    onJoinRoom(roomCode);
+    joinRoom(roomCode);
   };
 
   return (
@@ -72,9 +76,9 @@ const Home = ({ onJoinRoom }) => {
                       4人競技房間 - 固定順序賽制
                     </div>
                   </div>
-                  <button 
+                  <button
                     className="join-btn"
-                    onClick={() => onJoinRoom(room.code)}
+                    onClick={() => joinRoom(room.code)}
                   >
                     加入
                   </button>
