@@ -1,19 +1,48 @@
-// Results modal component for final tournament results
-import React, { useState } from 'react';
+// 早期結束 / 早期查看用 — 顯示兩 round 獨立排名
+import React, { useState, useMemo } from 'react';
 import HistoryModal from './HistoryModal';
+import { computeRoundRanking } from '../utils/rankingLogic';
 
-const ResultsModal = ({ leaderboard, roomCode, onClose }) => {
+const ResultsModal = ({ matches = [], playerNames = {}, roomCode, onClose }) => {
   const [showHistory, setShowHistory] = useState(false);
-  const winner = leaderboard[0];
-  
+
+  const r1 = useMemo(
+    () => computeRoundRanking(matches, 1, {}, true),
+    [matches]
+  );
+  const r2 = useMemo(
+    () => computeRoundRanking(matches, 2, {}, true),
+    [matches]
+  );
+
+  const r1HasData = matches.slice(0, 18).some(m => m && m.winner);
+  const r2HasData = matches.slice(18, 36).some(m => m && m.winner);
+
   if (showHistory) {
     return (
-      <HistoryModal 
-        roomCode={roomCode} 
-        onClose={() => setShowHistory(false)} 
+      <HistoryModal
+        roomCode={roomCode}
+        onClose={() => setShowHistory(false)}
       />
     );
   }
+
+  const renderRanking = (label, data) => (
+    <div className="final-standings">
+      <h4>{label}</h4>
+      <div className="standings-list">
+        {data.ranking.map((r) => (
+          <div key={r.player} className="standing-item">
+            <div className="standing-rank">#{r.rank}{r.tied ? ' (並列)' : ''}</div>
+            <div className="standing-player">
+              <span className="player-name-primary">{playerNames[r.player] || r.player}</span>
+            </div>
+            <div className="standing-score">{r.score} 勝</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <div className="modal-overlay">
@@ -22,49 +51,23 @@ const ResultsModal = ({ leaderboard, roomCode, onClose }) => {
           <h2>比賽結果</h2>
           <button className="close-btn" onClick={onClose}>×</button>
         </div>
-        
-        <div className="modal-body">
-          <div className="winner-announcement">
-            <div className="winner-crown">👑</div>
-            <h3>恭喜獲勝者！</h3>
-            <div className="winner-info">
-              {winner.name && winner.name !== winner.player ? (
-                <div className="winner-name-primary">{winner.name}</div>
-              ) : (
-                <div className="winner-player-primary">{winner.player}</div>
-              )}
-              <div className="winner-score">{winner.score} 分</div>
-            </div>
-          </div>
 
-          <div className="final-standings">
-            <h4>最終排名</h4>
-            <div className="standings-list">
-              {leaderboard.map((entry, index) => (
-                <div key={entry.player} className="standing-item">
-                  <div className="standing-rank">#{index + 1}</div>
-                  <div className="standing-player">
-                    {entry.name && entry.name !== entry.player ? (
-                      <span className="player-name-primary">{entry.name}</span>
-                    ) : (
-                      <span className="player-label-primary">{entry.player}</span>
-                    )}
-                  </div>
-                  <div className="standing-score">{entry.score} 分</div>
-                </div>
-              ))}
-            </div>
-          </div>
+        <div className="modal-body">
+          {r1HasData && renderRanking('🥇 Round 1 排名', r1)}
+          {r2HasData && renderRanking('🥇 Round 2 排名', r2)}
+          {!r1HasData && !r2HasData && (
+            <p>尚無比賽資料。</p>
+          )}
 
           <div className="room-info">
             <p>房間代碼: <strong>{roomCode}</strong></p>
-            <p>比賽已結束，感謝各位的參與！</p>
+            <p>比賽已結束,感謝各位的參與!</p>
           </div>
         </div>
 
         <div className="modal-footer">
-          <button 
-            className="cancel-btn" 
+          <button
+            className="cancel-btn"
             onClick={() => setShowHistory(true)}
           >
             查看歷史記錄

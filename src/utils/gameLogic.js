@@ -18,46 +18,81 @@ export const TRADITIONAL_MATCH_ORDER = [
 ];
 
 // Rotate players for new round: A->B, B->C, C->D, D->A
-export const rotatePlayersForRound = (roundNumber) => {
-  const basePositions = ['A', 'B', 'C', 'D'];
-  if (roundNumber <= 1) {
-    return basePositions;
+// roundNumber here = GLOBAL 輪 number (1-6 在 2 user-rounds 中)
+// perms (可選) = { 1: ['A','B','C','D'], 2: [...] } — 每個 user-round 的起始排列
+// 若提供,則 user-round 起始時用該 perm,內部 sub-rounds rotate;
+// 若沒提供,fallback 用舊全域 rotation 行為
+export const rotatePlayersForRound = (roundNumber, perms = null) => {
+  if (perms) {
+    const userRound = Math.floor((roundNumber - 1) / 3) + 1; // 1 or 2
+    const subRound = ((roundNumber - 1) % 3) + 1;           // 1..3
+    const base = perms[userRound] || ['A', 'B', 'C', 'D'];
+    const rotated = [...base];
+    for (let i = 0; i < subRound - 1; i++) {
+      const temp = rotated[3];
+      rotated[3] = rotated[2];
+      rotated[2] = rotated[1];
+      rotated[1] = rotated[0];
+      rotated[0] = temp;
+    }
+    return rotated;
   }
-  
-  // For round 2 and beyond, rotate positions
+
+  // 舊行為 (沒 perms): 全域 rotation
+  const basePositions = ['A', 'B', 'C', 'D'];
+  if (roundNumber <= 1) return basePositions;
   const rotationOffset = (roundNumber - 1) % 4;
   const rotatedPositions = [...basePositions];
-  
   for (let i = 0; i < rotationOffset; i++) {
-    // A->B, B->C, C->D, D->A rotation
-    const temp = rotatedPositions[3]; // Save D
-    rotatedPositions[3] = rotatedPositions[2]; // D = C
-    rotatedPositions[2] = rotatedPositions[1]; // C = B
-    rotatedPositions[1] = rotatedPositions[0]; // B = A
-    rotatedPositions[0] = temp; // A = D
+    const temp = rotatedPositions[3];
+    rotatedPositions[3] = rotatedPositions[2];
+    rotatedPositions[2] = rotatedPositions[1];
+    rotatedPositions[1] = rotatedPositions[0];
+    rotatedPositions[0] = temp;
   }
-  
   return rotatedPositions;
 };
 
 // Get position mapping for current round
-export const getPositionMappingForRound = (roundNumber) => {
-  const rotatedPositions = rotatePlayersForRound(roundNumber);
+export const getPositionMappingForRound = (roundNumber, perms = null) => {
+  const rotatedPositions = rotatePlayersForRound(roundNumber, perms);
   const mapping = {};
-  
-  // Map original positions to rotated positions
   ['A', 'B', 'C', 'D'].forEach((originalPos, index) => {
     mapping[originalPos] = rotatedPositions[index];
   });
-  
   return mapping;
 };
 
+// 隨機產生 4 人 permutation,可選擇避開某個 first pair (pair 順序無關)
+export const generateRandomPermutation = (avoidFirstPair = null) => {
+  const players = ['A', 'B', 'C', 'D'];
+  const allPairs = [
+    ['A','B'], ['A','C'], ['A','D'], ['B','C'], ['B','D'], ['C','D']
+  ];
+  const sameSet = (a, b) => {
+    if (!a || !b) return false;
+    const s = new Set(a);
+    return s.has(b[0]) && s.has(b[1]);
+  };
+  let firstPair;
+  let safety = 0;
+  do {
+    firstPair = allPairs[Math.floor(Math.random() * allPairs.length)];
+    safety++;
+  } while (avoidFirstPair && sameSet(firstPair, avoidFirstPair) && safety < 50);
+  const remaining = players.filter(p => !firstPair.includes(p));
+  // 內部隨機 swap (M1 兩人位置、M2 兩人位置 沒語意差,但偶爾 swap 增加變化)
+  const fp = Math.random() < 0.5 ? firstPair : [firstPair[1], firstPair[0]];
+  const sp = Math.random() < 0.5 ? remaining : [remaining[1], remaining[0]];
+  return [fp[0], fp[1], sp[0], sp[1]];
+};
+
 // Dynamic match order based on previous results and round rotation
-export const generateDynamicMatchOrder = (matchResults = [], currentMatchIndex = 0) => {
+// perms (可選) 來自 roomData.permutations,用於每個 user-round 的起始排列
+export const generateDynamicMatchOrder = (matchResults = [], currentMatchIndex = 0, perms = null) => {
   // Calculate current round (6 matches per round)
   const currentRound = Math.floor(currentMatchIndex / 6) + 1;
-  const positionMapping = getPositionMappingForRound(currentRound);
+  const positionMapping = getPositionMappingForRound(currentRound, perms);
   
   // Apply position mapping to get current round players
   const currentPlayers = {
@@ -127,15 +162,15 @@ export const generateRoomCode = () => {
 };
 
 // Get current match based on match index and previous results
-export const getCurrentMatch = (matchIndex, matchResults = []) => {
-  const dynamicOrder = generateDynamicMatchOrder(matchResults, matchIndex);
+export const getCurrentMatch = (matchIndex, matchResults = [], perms = null) => {
+  const dynamicOrder = generateDynamicMatchOrder(matchResults, matchIndex, perms);
   const matchInCurrentRound = matchIndex % 6;
   return dynamicOrder[matchInCurrentRound] || dynamicOrder[0];
 };
 
 // Get current match order based on results and match index
-export const getCurrentMatchOrder = (matchResults = [], currentMatchIndex = 0) => {
-  return generateDynamicMatchOrder(matchResults, currentMatchIndex);
+export const getCurrentMatchOrder = (matchResults = [], currentMatchIndex = 0, perms = null) => {
+  return generateDynamicMatchOrder(matchResults, currentMatchIndex, perms);
 };
 
 // Get round number based on match index (6 matches per round)

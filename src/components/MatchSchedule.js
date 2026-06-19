@@ -1,9 +1,10 @@
 // Match schedule component showing dynamic match order
 import React from 'react';
 import { getCurrentMatchOrder, getRoundNumber, getMatchInRound } from '../utils/gameLogic';
+import { calculateHandicap } from '../utils/rankingLogic';
 
-const MatchSchedule = ({ currentMatchIndex, playerNames, matchResults = [] }) => {
-  const currentMatchOrder = getCurrentMatchOrder(matchResults, currentMatchIndex);
+const MatchSchedule = ({ currentMatchIndex, playerNames, matchResults = [], cumulativeScores = {}, perms = null }) => {
+  const currentMatchOrder = getCurrentMatchOrder(matchResults, currentMatchIndex, perms);
   const currentRound = getRoundNumber(currentMatchIndex);
   const matchInRound = getMatchInRound(currentMatchIndex) - 1; // Convert to 0-based index
   
@@ -47,6 +48,17 @@ const MatchSchedule = ({ currentMatchIndex, playerNames, matchResults = [] }) =>
             labelClass = 'losers';
           }
 
+          // 讓分:領先方在當前累積分數下要讓對手幾分
+          let handicapText = '';
+          if (isMatchConfirmed && cumulativeScores) {
+            const hc = calculateHandicap(cumulativeScores, player1, player2);
+            if (hc.amount > 0) {
+              const giverName = playerNames?.[hc.giver] || hc.giver;
+              const receiverName = playerNames?.[hc.receiver] || hc.receiver;
+              handicapText = `${giverName} 讓 ${receiverName} ${hc.amount} 分`;
+            }
+          }
+
           return (
             <div 
               key={index} 
@@ -78,6 +90,9 @@ const MatchSchedule = ({ currentMatchIndex, playerNames, matchResults = [] }) =>
                 {isCurrentMatch && <span className="current-indicator">進行中</span>}
                 {isPastMatch && <span className="completed-indicator">✓</span>}
               </div>
+              {handicapText && !isPastMatch && (
+                <div className="match-handicap">⚖️ {handicapText}</div>
+              )}
             </div>
           );
         })}

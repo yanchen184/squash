@@ -1,6 +1,7 @@
 // Database service for Firebase operations
 import { database } from './firebase';
 import { ref, set, get, onValue, serverTimestamp, off, update } from 'firebase/database';
+import { generateRandomPermutation } from '../utils/gameLogic';
 
 // Room operations
 export const createRoom = async (roomCode, hostName, roomName = '') => {
@@ -26,7 +27,7 @@ export const createRoom = async (roomCode, hostName, roomName = '') => {
     currentMatch: 0,
     playerNames: {
       A: settings.defaultPlayerNames.A,
-      B: settings.defaultPlayerNames.B, 
+      B: settings.defaultPlayerNames.B,
       C: settings.defaultPlayerNames.C,
       D: settings.defaultPlayerNames.D
     },
@@ -36,6 +37,10 @@ export const createRoom = async (roomCode, hostName, roomName = '') => {
       B: 0,
       C: 0,
       D: 0
+    },
+    // Round 1 起始 permutation (隨機);Round 2 在 match 17 完成時才生
+    permutations: {
+      1: generateRandomPermutation()
     }
   };
   
@@ -68,16 +73,30 @@ export const updateRoomStatus = async (roomCode, status) => {
 };
 
 // Record match result
-export const recordMatchResult = async (roomCode, matchIndex, winner) => {
-  console.log('recordMatchResult called:', { roomCode, matchIndex, winner });
+// extras: { scores?: { winner: number, loser: number }, handicap?: { giver, receiver, amount } }
+export const recordMatchResult = async (roomCode, matchIndex, winner, extras = {}) => {
+  console.log('recordMatchResult called:', { roomCode, matchIndex, winner, extras });
   const roomRef = ref(database, `rooms/${roomCode}`);
-  
+
   // Create match result object
   const matchResult = {
     index: matchIndex,
     winner: winner,
     timestamp: Date.now() // Use client timestamp for better sync
   };
+  if (extras.scores && typeof extras.scores.winner === 'number' && typeof extras.scores.loser === 'number') {
+    matchResult.scores = { winner: extras.scores.winner, loser: extras.scores.loser };
+  }
+  if (extras.handicap && extras.handicap.amount > 0) {
+    matchResult.handicap = {
+      giver: extras.handicap.giver,
+      receiver: extras.handicap.receiver,
+      amount: extras.handicap.amount,
+    };
+  }
+  if (extras.pair && extras.pair.length === 2) {
+    matchResult.pair = [extras.pair[0], extras.pair[1]];
+  }
   
   // Get current room data
   const roomSnapshot = await get(roomRef);
@@ -110,7 +129,18 @@ export const recordMatchResult = async (roomCode, matchIndex, winner) => {
     [`currentMatch`]: matchIndex + 1,
     [`lastUpdated`]: Date.now()
   };
-  
+
+  // 當記錄第 17 場 (= Round 1 最後一場) 時,生成 Round 2 起始 permutation
+  // 限制:Round 2 第一場的 pair 不能跟 Round 1 最後一場相同
+  if (matchIndex === 17) {
+    const existingPerms = roomData.permutations || {};
+    if (!existingPerms[2]) {
+      const r1LastPair = matchResult.pair;
+      const perm2 = generateRandomPermutation(r1LastPair);
+      updates['permutations'] = { ...existingPerms, 2: perm2 };
+    }
+  }
+
   console.log('Updating room with:', updates);
   await update(roomRef, updates);
   console.log('Room update completed');

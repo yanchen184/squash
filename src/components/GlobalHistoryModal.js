@@ -1,6 +1,7 @@
 // Global history modal component to display all game history
 import React, { useState, useEffect } from 'react';
 import { getAllHistory } from '../services/database';
+import { computeRoundRanking } from '../utils/rankingLogic';
 
 const GlobalHistoryModal = ({ onClose }) => {
   const [history, setHistory] = useState([]);
@@ -104,26 +105,54 @@ const GlobalHistoryModal = ({ onClose }) => {
                 </div>
               </div>
 
-              <div className="final-ranking">
-                <h3>最終排名</h3>
-                <div className="ranking-list">
-                  {Object.entries(selectedHistory.finalScores)
-                    .sort(([,a], [,b]) => b - a)
-                    .map(([player, score], index) => (
-                    <div key={player} className={`ranking-item ${index === 0 ? 'winner' : ''}`}>
-                      <div className="rank">
-                        {index === 0 && <span className="crown">👑</span>}
-                        #{index + 1}
-                      </div>
-                      <div className="player-info">
-                        <div className="player-label">{player}</div>
-                        <div className="player-name">{selectedHistory.players[player]}</div>
-                      </div>
-                      <div className="score">{score} 分</div>
+              {(() => {
+                const mm = selectedHistory.matches || [];
+                const r1 = computeRoundRanking(mm, 1, {}, true);
+                const r2 = computeRoundRanking(mm, 2, {}, true);
+                const r1Has = mm.slice(0, 18).some(m => m && m.winner);
+                const r2Has = mm.slice(18, 36).some(m => m && m.winner);
+                const renderRR = (label, data) => (
+                  <div className="final-ranking" style={{ marginTop: 12 }}>
+                    <h3>{label}</h3>
+                    <div className="ranking-list">
+                      {data.ranking.map((r) => (
+                        <div key={r.player} className={`ranking-item ${r.rank === 1 ? 'winner' : ''}`}>
+                          <div className="rank">
+                            {r.rank === 1 && <span className="crown">👑</span>}
+                            #{r.rank}{r.tied ? '(並列)' : ''}
+                          </div>
+                          <div className="player-info">
+                            <div className="player-name">{selectedHistory.players[r.player] || r.player}</div>
+                          </div>
+                          <div className="score">{r.score} 勝</div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </div>
+                  </div>
+                );
+                return (
+                  <>
+                    {r1Has && renderRR('🥇 Round 1 排名', r1)}
+                    {r2Has && renderRR('🥇 Round 2 排名', r2)}
+                    <div className="final-ranking" style={{ marginTop: 12 }}>
+                      <h3>📊 當天總計</h3>
+                      <div className="ranking-list">
+                        {Object.entries(selectedHistory.finalScores)
+                          .sort(([,a], [,b]) => b - a)
+                          .map(([player, score], index) => (
+                          <div key={player} className="ranking-item">
+                            <div className="rank">#{index + 1}</div>
+                            <div className="player-info">
+                              <div className="player-name">{selectedHistory.players[player]}</div>
+                            </div>
+                            <div className="score">{score} 勝</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
 
               <div className="match-history">
                 <h3>比賽記錄</h3>

@@ -5,6 +5,7 @@ import { subscribeToActiveRooms } from '../services/database';
 import RoomCreator from './RoomCreator';
 import Settings from './Settings';
 import GlobalHistoryModal from './GlobalHistoryModal';
+import StatsModal from './StatsModal';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ const Home = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [showRoomCreator, setShowRoomCreator] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showStats, setShowStats] = useState(false);
 
   const joinRoom = (roomCode) => navigate(`/room/${roomCode}`);
 
@@ -51,11 +53,17 @@ const Home = () => {
           >
             創建房間
           </button>
-          <button 
+          <button
             className="cancel-btn"
             onClick={() => setShowHistory(true)}
           >
-            📊 歷史記錄
+            📋 歷史記錄
+          </button>
+          <button
+            className="cancel-btn"
+            onClick={() => setShowStats(true)}
+          >
+            📊 統計
           </button>
         </div>
 
@@ -102,6 +110,10 @@ const Home = () => {
 
       {showHistory && (
         <GlobalHistoryModal onClose={() => setShowHistory(false)} />
+      )}
+
+      {showStats && (
+        <StatsModal onClose={() => setShowStats(false)} />
       )}
     </div>
   );
