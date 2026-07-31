@@ -2563,13 +2563,14 @@ body {
 .stats-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: 14px;
   margin-top: 6px;
 }
 .stats-table th, .stats-table td {
   border: 1px solid #ddd;
-  padding: 6px 10px;
+  padding: 8px 12px;
   text-align: center;
+  white-space: nowrap;
 }
 .stats-table th { background: #f5f5f5; }
 .stats-table tr.selected { background: #fff3e0; }
@@ -2597,14 +2598,28 @@ body {
   border-color: #1976d2;
 }
 
+/* 統計 modal 桌機加寬：9 欄一眼看全，不需左右捲動 */
+.modal-content.stats-modal {
+  max-width: 920px;
+}
+/* 桌機讓表格撐滿加寬後的 modal，欄位平均分佈 */
+.stats-scroll .stats-table {
+  min-width: 100%;
+}
+
 /* 手機版表格捲動 */
 .stats-scroll {
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
-.stats-scroll .stats-table {
-  min-width: 540px; /* 內容不被擠壓 */
+@media (min-width: 769px) {
+  /* 桌機不出現橫向捲軸，直接一次看全 */
+  .stats-scroll { overflow-x: visible; }
+}
+@media (max-width: 768px) {
+  /* 手機欄位多時仍保留最小寬度可捲，避免擠壓 */
+  .stats-scroll .stats-table { min-width: 560px; }
 }
 
 /* 手機版 modal 內容 */
