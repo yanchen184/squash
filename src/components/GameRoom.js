@@ -8,6 +8,7 @@ import {
   cumulativeWinsInRound,
   groupByScore,
   shouldCollectScore,
+  roundPointsPerPlayer,
 } from '../utils/rankingLogic';
 import GameBoard from './GameBoard';
 import Leaderboard from './Leaderboard';
@@ -22,6 +23,7 @@ const GameRoom = ({ roomCode, onLeaveRoom }) => {
   const [roundNumber, setRoundNumber] = useState(1);
   const [matchInRound, setMatchInRound] = useState(1);
   const [leaderboard, setLeaderboard] = useState([]);
+  const [showPoints, setShowPoints] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
   const [canUndo, setCanUndo] = useState(false);
@@ -68,7 +70,10 @@ const GameRoom = ({ roomCode, onLeaveRoom }) => {
     setCurrentMatch(match);
     setRoundNumber(round);
     setMatchInRound(matchInCurrentRound);
-    setLeaderboard(getLeaderboard(roundOnlyScores, playerNames));
+    const roundPoints = roundPointsPerPlayer(matches, userRound);
+    setLeaderboard(getLeaderboard(roundOnlyScores, playerNames).map(e => ({ ...e, points: roundPoints[e.player] || 0 })));
+    // Round 2 最後一輪 (sub-round 3):顯示累積比分,方便看 tie-break 勝利條件
+    setShowPoints(userRound === 2 && Math.floor((currentMatchIndex % 18) / 6) === 2);
     setIsFinished(data.status === 'finished');
 
     const hasMatches = matches.some(m => m && m.winner);
@@ -311,9 +316,10 @@ const GameRoom = ({ roomCode, onLeaveRoom }) => {
               </div>
               
               <div className="leaderboard-container-mobile">
-                <Leaderboard 
+                <Leaderboard
                   leaderboard={leaderboard}
                   isFinished={isFinished}
+                  showPoints={showPoints}
                 />
               </div>
             </div>
@@ -428,6 +434,7 @@ const GameRoom = ({ roomCode, onLeaveRoom }) => {
               <Leaderboard
                 leaderboard={leaderboard}
                 isFinished={isFinished}
+                showPoints={showPoints}
               />
               <RulesPanel />
             </div>
