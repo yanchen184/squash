@@ -2618,8 +2618,8 @@ body {
   .stats-scroll { overflow-x: visible; }
 }
 @media (max-width: 768px) {
-  /* 手機欄位多時仍保留最小寬度可捲，避免擠壓 */
-  .stats-scroll .stats-table { min-width: 560px; }
+  /* 手機盡量塞進畫面寬度：不強制最小寬度、允許換行，避免左右捲動 */
+  .stats-scroll .stats-table { min-width: 0; }
 }
 
 /* 手機版 modal 內容 */
@@ -2633,8 +2633,9 @@ body {
     max-height: 92vh;
     margin: 4vh auto;
   }
-  .stats-table { font-size: 12px; }
-  .stats-table th, .stats-table td { padding: 4px 6px; }
+  .stats-table { font-size: 10px; }
+  .stats-table th, .stats-table td { padding: 2px 3px; white-space: normal; word-break: break-word; }
+  .stats-table .rps-btn { padding: 2px 5px; font-size: 9px; }
   .h2h-table { font-size: 11px; }
   .range-btn { padding: 5px 10px; font-size: 12px; }
   .rules-content { font-size: 12px; }

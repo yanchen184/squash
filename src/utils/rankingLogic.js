@@ -384,6 +384,7 @@ export const shouldCollectScore = (matchIndex, matches) => {
 
   // For 第 1 輪 case: 計算這 3 人的 H2H 範圍 (在 sub-round 1)
   const sub1Set = new Set(subRoundMatchIndexes(2, 1));
+  const sub3Set = new Set(subRoundMatchIndexes(2, 3));
 
   const totalCombos = 1 << remaining.length;
   for (let combo = 0; combo < totalCombos; combo++) {
@@ -402,7 +403,31 @@ export const shouldCollectScore = (matchIndex, matches) => {
       if (threeWay) {
         const set = new Set(threeWay);
         if (set.has(currentPair[0]) && set.has(currentPair[1])) {
-          return true;
+          // 比分只在「3 人 H2H 循環 (勝場均等,各 1 勝)」時才會用到;
+          // 若 H2H 已能分出高下 (2/1/0),名次確立就不需比分。
+          const wins = {};
+          threeWay.forEach(p => { wins[p] = 0; });
+          sub3Set.forEach(idx => {
+            let winner;
+            let pair;
+            if (matches[idx] && matches[idx].winner) {
+              winner = matches[idx].winner;
+              pair = getPairForMatch(matches, idx);
+            } else {
+              const remIdx = remaining.indexOf(idx);
+              if (remIdx === -1) return;
+              pair = remainingPairs[remIdx];
+              winner = pair[(combo >> remIdx) & 1];
+            }
+            if (!pair) return;
+            if (set.has(pair[0]) && set.has(pair[1])) {
+              wins[winner] = (wins[winner] || 0) + 1;
+            }
+          });
+          const vals = Object.values(wins);
+          if (vals.length === 3 && vals.every(v => v === vals[0])) {
+            return true;
+          }
         }
       }
     }
