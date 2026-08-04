@@ -2645,3 +2645,11 @@ body {
 @media (max-width: 768px) {
   .settlement-modal .h2h-block { overflow-x: auto; }
 }
+
+/* 積分榜:Round 2 最後一輪額外顯示的累積比分 */
+.leaderboard .score-points { font-size: 0.78em; color: #888; font-weight: normal; }
+/* 歷史:每場勝負對戰配色 */
+.match-result .mr-winner { color: #2e7d32; font-weight: 600; }
+.match-result .mr-vs { color: #999; }
+.match-result .mr-loser { color: #888; }
+.match-result .mr-score { color: #555; margin-left: 4px; }

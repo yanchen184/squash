@@ -49,12 +49,18 @@ const GlobalHistoryModal = ({ onClose }) => {
     return historyItem.matches
       .map((match, index) => {
         if (!match || !match.winner) return null;
-        
+
+        // 對手/輸家從 match.pair 取 (存了真實對戰組合,含 round 2 輪動)
+        const pair = (match.pair && match.pair.length === 2) ? match.pair : null;
+        const loser = pair ? (pair[0] === match.winner ? pair[1] : pair[0]) : null;
+
         return {
           index,
           round: Math.floor(index / 6) + 1,
           matchInRound: (index % 6) + 1,
           winner: match.winner,
+          loser,
+          scores: match.scores || null,
           timestamp: match.timestamp
         };
       })
@@ -164,7 +170,18 @@ const GlobalHistoryModal = ({ onClose }) => {
                         <span className="match-time">{formatDate(match.timestamp)}</span>
                       </div>
                       <div className="match-result">
-                        勝利者: {selectedHistory.players[match.winner]} ({match.winner})
+                        {match.loser ? (
+                          <>
+                            <span className="mr-winner">🏆 {selectedHistory.players[match.winner] || match.winner}</span>
+                            <span className="mr-vs"> 勝 </span>
+                            <span className="mr-loser">{selectedHistory.players[match.loser] || match.loser}</span>
+                            {match.scores && typeof match.scores.winner === 'number' && (
+                              <span className="mr-score">（{match.scores.winner} : {match.scores.loser}）</span>
+                            )}
+                          </>
+                        ) : (
+                          <>勝利者: {selectedHistory.players[match.winner] || match.winner} ({match.winner})</>
+                        )}
                       </div>
                     </div>
                   ))}

@@ -118,6 +118,24 @@ export const effectiveScores = (match) => {
   return { winner: w, loser: l };
 };
 
+/** 每位玩家在某 round 的累積比分 (有效比分, deuce 8:6, 未輸入視 7:0) — tie-break 用的「比分」 */
+export const roundPointsPerPlayer = (matches, round) => {
+  const pts = {};
+  const start = (round - 1) * MATCHES_PER_ROUND;
+  const end = round * MATCHES_PER_ROUND;
+  for (let i = start; i < end; i++) {
+    const m = matches[i];
+    if (!m || !m.winner) continue;
+    const pair = getPairForMatch(matches, i);
+    if (!pair) continue;
+    const es = effectiveScores(m);
+    const loser = pair[0] === m.winner ? pair[1] : pair[0];
+    pts[m.winner] = (pts[m.winner] || 0) + es.winner;
+    pts[loser] = (pts[loser] || 0) + es.loser;
+  }
+  return pts;
+};
+
 /** group by score (高到低) */
 export const groupByScore = (scores) => {
   const buckets = {};

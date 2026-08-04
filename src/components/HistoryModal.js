@@ -49,20 +49,18 @@ const HistoryModal = ({ roomCode, onClose }) => {
         const round = Math.floor(index / 6) + 1;
         const matchInRound = (index % 6) + 1;
         
-        // 簡化的對戰組合邏輯，基於固定規則
+        // 用 match.pair (存了真實對戰組合,含 round 2 輪動 / 隨機起始排列);
+        // 老資料沒 pair 才 fallback 傳統固定順序
         let currentMatch;
-        if (matchInRound === 1) {
-          currentMatch = ['A', 'B'];
-        } else if (matchInRound === 2) {
-          currentMatch = ['C', 'D'];
+        if (match.pair && match.pair.length === 2) {
+          currentMatch = match.pair;
         } else {
-          // 對於歷史記錄，使用傳統固定順序
           const traditional = [
             ['A', 'B'], ['C', 'D'], ['C', 'A'], ['B', 'D'], ['B', 'C'], ['A', 'D']
           ];
           currentMatch = traditional[(index % 6)] || ['A', 'B'];
         }
-        
+
         return {
           index,
           round,
@@ -70,6 +68,7 @@ const HistoryModal = ({ roomCode, onClose }) => {
           player1: currentMatch[0],
           player2: currentMatch[1],
           winner: match.winner,
+          scores: match.scores || null,
           timestamp: match.timestamp
         };
       })
@@ -301,9 +300,10 @@ const HistoryModal = ({ roomCode, onClose }) => {
                       </span>
                     </div>
                     <div className="match-result">
-                      勝利者: {history.players[match.winner] && history.players[match.winner] !== match.winner 
-                        ? history.players[match.winner] 
+                      勝利者: {history.players[match.winner] && history.players[match.winner] !== match.winner
+                        ? history.players[match.winner]
                         : match.winner}
+                      {match.scores && typeof match.scores.winner === 'number' && ` （${match.scores.winner} : ${match.scores.loser}）`}
                     </div>
                   </div>
                 ))}
