@@ -53,7 +53,7 @@ export const RANGE_LABELS = {
  *   pairs: { [`name1|name2`]: { totalGames, name1Wins, name2Wins, name1AvgHandicapGiven, name2AvgHandicapGiven } }
  * }
  */
-export const computeStats = (historyRecords, rangeStart = STATS_START_TIMESTAMP) => {
+export const computeStats = (historyRecords, rangeStart = STATS_START_TIMESTAMP, rangeEnd = Infinity) => {
   const players = {};   // by name
   const pairs = {};     // by sorted pair key
 
@@ -91,7 +91,7 @@ export const computeStats = (historyRecords, rangeStart = STATS_START_TIMESTAMP)
 
   // Filter by cutoff
   const filtered = historyRecords.filter(h =>
-    h && h.gameEndTime && h.gameEndTime >= rangeStart
+    h && h.gameEndTime && h.gameEndTime >= rangeStart && h.gameEndTime <= rangeEnd
   );
 
   filtered.forEach(record => {
@@ -172,8 +172,29 @@ export const computeStats = (historyRecords, rangeStart = STATS_START_TIMESTAMP)
     players,
     pairs,
     recordCount: filtered.length,
+    rangeStart,
+    rangeEnd,
     cutoffDate: new Date(rangeStart).toLocaleDateString('zh-TW'),
   };
+};
+
+/**
+ * 列出所有場次 (供統計「指定場次」下拉用) — 依結束時間新到舊
+ * @returns {Array<{id:string, gameEndTime:number, label:string}>}
+ */
+export const listSessions = (historyRecords) => {
+  const pad = (n) => String(n).padStart(2, '0');
+  return (historyRecords || [])
+    .filter(h => h && h.gameEndTime)
+    .slice()
+    .sort((a, b) => b.gameEndTime - a.gameEndTime)
+    .map(h => {
+      const names = Object.values(h.players || {}).map(p => (p && p.name) || '').filter(Boolean);
+      const d = new Date(h.gameEndTime);
+      const dateStr = `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      const label = `${dateStr}${h.roomName ? ' · ' + h.roomName : ''}${names.length ? ' · ' + names.join('/') : ''}`;
+      return { id: String(h.gameEndTime), gameEndTime: h.gameEndTime, label };
+    });
 };
 
 /**

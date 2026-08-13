@@ -1,13 +1,28 @@
 // 歷史統計 modal — 顯示玩家勝率、平均讓分、對戰勝率
 import React, { useState, useEffect, useMemo } from 'react';
 import { getAllHistory } from '../services/database';
-import { computeStats, getPlayerOpponentStats, getRangeStart, RANGE_LABELS } from '../utils/statsLogic';
+import { computeStats, getPlayerOpponentStats, getRangeStart, RANGE_LABELS, listSessions, STATS_START_TIMESTAMP } from '../utils/statsLogic';
+
+const pad2 = (n) => String(n).padStart(2, '0');
+// timestamp -> <input type="datetime-local"> 的值 (本地時區)
+const toLocalInput = (ts) => {
+  const d = new Date(ts);
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+};
+const fmtTs = (ts) => {
+  if (!isFinite(ts)) return '現在';
+  const d = new Date(ts);
+  return `${d.getFullYear()}/${pad2(d.getMonth() + 1)}/${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+};
 
 const StatsModal = ({ onClose }) => {
   const [history, setHistory] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
-  const [range, setRange] = useState('today');
+  const [range, setRange] = useState('today');   // 預設 key | 'custom' | 'session'
+  const [customFrom, setCustomFrom] = useState('');
+  const [customTo, setCustomTo] = useState('');
+  const [sessionId, setSessionId] = useState('');
 
   useEffect(() => {
     let mounted = true;
@@ -26,11 +41,33 @@ const StatsModal = ({ onClose }) => {
     return () => { mounted = false; };
   }, []);
 
+  const sessions = useMemo(() => listSessions(history || []), [history]);
+
   const stats = useMemo(() => {
     if (!history) return null;
-    const start = getRangeStart(range);
-    return computeStats(history, start);
-  }, [history, range]);
+    if (range === 'custom') {
+      const s = customFrom ? new Date(customFrom).getTime() : STATS_START_TIMESTAMP;
+      const e = customTo ? new Date(customTo).getTime() : Infinity;
+      return computeStats(history, s, e);
+    }
+    if (range === 'session') {
+      if (!sessionId) return computeStats([], 0, 0);
+      const rec = history.find(h => String(h.gameEndTime) === sessionId);
+      return computeStats(rec ? [rec] : [], 0, Infinity);
+    }
+    return computeStats(history, getRangeStart(range));
+  }, [history, range, customFrom, customTo, sessionId]);
+
+  // 切到「自訂區間」時給預設值 (今天 00:00 ~ 現在)
+  const enterCustom = () => {
+    if (!customFrom || !customTo) {
+      const now = new Date();
+      const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      setCustomFrom(toLocalInput(dayStart.getTime()));
+      setCustomTo(toLocalInput(now.getTime()));
+    }
+    setRange('custom');
+  };
   const sortedPlayers = useMemo(() => {
     if (!stats) return [];
     return Object.values(stats.players).sort((a, b) => b.totalGames - a.totalGames);
@@ -66,10 +103,55 @@ const StatsModal = ({ onClose }) => {
                     {label}
                   </button>
                 ))}
+                <button
+                  className={`range-btn ${range === 'custom' ? 'active' : ''}`}
+                  onClick={enterCustom}
+                >
+                  自訂區間
+                </button>
+                <button
+                  className={`range-btn ${range === 'session' ? 'active' : ''}`}
+                  onClick={() => setRange('session')}
+                >
+                  指定場次
+                </button>
               </div>
+
+              {range === 'custom' && (
+                <div className="custom-range" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', margin: '10px 0' }}>
+                  <label>從&nbsp;
+                    <input type="datetime-local" value={customFrom} max={customTo || undefined}
+                      onChange={e => setCustomFrom(e.target.value)} />
+                  </label>
+                  <label>到&nbsp;
+                    <input type="datetime-local" value={customTo} min={customFrom || undefined}
+                      onChange={e => setCustomTo(e.target.value)} />
+                  </label>
+                </div>
+              )}
+
+              {range === 'session' && (
+                <div className="session-pick" style={{ margin: '10px 0' }}>
+                  <select value={sessionId} onChange={e => setSessionId(e.target.value)}
+                    style={{ width: '100%', maxWidth: '520px', padding: '6px 8px' }}>
+                    <option value="">— 選一個場次 (共 {sessions.length} 場) —</option>
+                    {sessions.map(s => (
+                      <option key={s.id} value={s.id}>{s.label}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div className="info-note">
-                統計區間: <b>{RANGE_LABELS[range]}</b> 起算 <b>{stats.cutoffDate}</b> (共 {stats.recordCount} 場比賽記錄)。
-                之前的歷史不納入。
+                {range === 'custom' ? (
+                  <>統計區間: <b>自訂</b> {fmtTs(customFrom ? new Date(customFrom).getTime() : STATS_START_TIMESTAMP)} ~ {fmtTs(customTo ? new Date(customTo).getTime() : Infinity)} (共 {stats.recordCount} 場比賽記錄)。</>
+                ) : range === 'session' ? (
+                  sessionId
+                    ? <>指定場次: <b>{sessions.find(s => s.id === sessionId)?.label}</b> (共 {stats.recordCount} 場比賽記錄)。</>
+                    : <>請從上方下拉選單挑一個場次。</>
+                ) : (
+                  <>統計區間: <b>{RANGE_LABELS[range]}</b> 起算 <b>{stats.cutoffDate}</b> (共 {stats.recordCount} 場比賽記錄)。之前的歷史不納入。</>
+                )}
               </div>
 
               {sortedPlayers.length === 0 && (
