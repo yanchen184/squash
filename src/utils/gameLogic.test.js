@@ -4,6 +4,7 @@ import {
   rotatePlayersForRound,
   getPositionMappingForRound,
   generateRandomPermutation,
+  generateRound2Permutation,
   generateDynamicMatchOrder,
   generateRoomCode,
   getCurrentMatch,
@@ -109,6 +110,50 @@ describe('generateRandomPermutation', () => {
       const firstPairSet = new Set([perm[0], perm[1]]);
       const isSamePair = firstPairSet.has('A') && firstPairSet.has('B');
       expect(isSamePair).toBe(false);
+    }
+  });
+});
+
+describe('generateRound2Permutation', () => {
+  const pairAt = (perm, slot) => new Set(slot === 1 ? [perm[0], perm[1]] : [perm[2], perm[3]]);
+  const setEq = (s, arr) => arr.every((p) => s.has(p));
+
+  it('puts a single R1 tied pair into match 1', () => {
+    // C=D=5 tied, A=4, B=3 → C/D 一定在第一場
+    for (let i = 0; i < 30; i++) {
+      const perm = generateRound2Permutation({ A: 4, B: 3, C: 5, D: 5 }, ['A', 'C']);
+      expect([...perm].sort()).toEqual(['A', 'B', 'C', 'D']);
+      expect(setEq(pairAt(perm, 1), ['C', 'D'])).toBe(true);
+    }
+  });
+
+  it('two tied pairs (2+2) fill both of the first two matches', () => {
+    // A=D=5, B=C=4 (今日實戰情境)
+    for (let i = 0; i < 30; i++) {
+      const perm = generateRound2Permutation({ A: 5, B: 4, C: 4, D: 5 }, ['B', 'C']);
+      expect([...perm].sort()).toEqual(['A', 'B', 'C', 'D']);
+      // B/C 是 R1 最後一場 → A/D 第一場,B/C 第二場
+      expect(setEq(pairAt(perm, 1), ['A', 'D'])).toBe(true);
+      expect(setEq(pairAt(perm, 2), ['B', 'C'])).toBe(true);
+    }
+  });
+
+  it('tied pair equal to R1 last pair is moved to match 2 (anti-repeat kept)', () => {
+    // C=D=5 tied,且 C/D 剛好是 R1 最後一場 → 排第二場
+    for (let i = 0; i < 30; i++) {
+      const perm = generateRound2Permutation({ A: 4, B: 3, C: 5, D: 5 }, ['C', 'D']);
+      expect(setEq(pairAt(perm, 1), ['A', 'B'])).toBe(true);
+      expect(setEq(pairAt(perm, 2), ['C', 'D'])).toBe(true);
+    }
+  });
+
+  it('falls back to random permutation when no 2-way tie (incl. 3-way tie)', () => {
+    for (let i = 0; i < 30; i++) {
+      // 3 人同分 → 不觸發優先排程,但仍是合法排列且避開 first pair
+      const perm = generateRound2Permutation({ A: 5, B: 5, C: 5, D: 3 }, ['A', 'B']);
+      expect([...perm].sort()).toEqual(['A', 'B', 'C', 'D']);
+      const first = new Set([perm[0], perm[1]]);
+      expect(first.has('A') && first.has('B')).toBe(false);
     }
   });
 });

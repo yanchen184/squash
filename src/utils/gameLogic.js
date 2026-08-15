@@ -87,6 +87,36 @@ export const generateRandomPermutation = (avoidFirstPair = null) => {
   return [fp[0], fp[1], sp[0], sp[1]];
 };
 
+// Round 2 起始排列:若 Round 1 結束有「兩人同分」,優先把同分者排進 Round 2 前兩場對戰。
+// 前兩場雙方在 Round 2 的累積皆為 0 勝 → 無讓分,tie-break 的 H2H 勝負才乾淨。
+// 兩組同分 (2+2) 時兩組各佔一場;仍保留「第一場 ≠ Round 1 最後一場」的防重賽規則,
+// 若同分 pair 剛好是 Round 1 最後一場,改排在第二場 (第二場同樣無讓分)。
+// 沒有兩人同分 (含 3 人同分) → 維持原本隨機排列。
+export const generateRound2Permutation = (r1Scores, avoidFirstPair = null) => {
+  const players = ['A', 'B', 'C', 'D'];
+  const sameSet = (a, b) => {
+    if (!a || !b) return false;
+    const s = new Set(a);
+    return s.has(b[0]) && s.has(b[1]);
+  };
+  const buckets = {};
+  players.forEach(p => {
+    const s = r1Scores?.[p] || 0;
+    (buckets[s] = buckets[s] || []).push(p);
+  });
+  const tiedPairs = Object.values(buckets).filter(g => g.length === 2);
+  if (tiedPairs.length === 0) return generateRandomPermutation(avoidFirstPair);
+
+  let first = tiedPairs[0];
+  let second = players.filter(p => !first.includes(p)); // 兩組同分時 = 另一組
+  if (avoidFirstPair && sameSet(first, avoidFirstPair)) {
+    const tmp = first; first = second; second = tmp;
+  }
+  const fp = Math.random() < 0.5 ? first : [first[1], first[0]];
+  const sp = Math.random() < 0.5 ? second : [second[1], second[0]];
+  return [fp[0], fp[1], sp[0], sp[1]];
+};
+
 // Dynamic match order based on previous results and round rotation
 // perms (可選) 來自 roomData.permutations,用於每個 user-round 的起始排列
 export const generateDynamicMatchOrder = (matchResults = [], currentMatchIndex = 0, perms = null) => {

@@ -1,7 +1,7 @@
 // Database service for Firebase operations
 import { database } from './firebase';
 import { ref, set, get, onValue, serverTimestamp, off, update } from 'firebase/database';
-import { generateRandomPermutation } from '../utils/gameLogic';
+import { generateRandomPermutation, generateRound2Permutation } from '../utils/gameLogic';
 
 // Room operations
 export const createRoom = async (roomCode, hostName, roomName = '') => {
@@ -131,12 +131,17 @@ export const recordMatchResult = async (roomCode, matchIndex, winner, extras = {
   };
 
   // 當記錄第 17 場 (= Round 1 最後一場) 時,生成 Round 2 起始 permutation
-  // 限制:Round 2 第一場的 pair 不能跟 Round 1 最後一場相同
+  // - Round 1 有兩人同分 → 同分者優先排進 Round 2 前兩場 (無讓分,tie-break H2H 乾淨)
+  // - 限制:Round 2 第一場的 pair 不能跟 Round 1 最後一場相同
   if (matchIndex === 17) {
     const existingPerms = roomData.permutations || {};
     if (!existingPerms[2]) {
       const r1LastPair = matchResult.pair;
-      const perm2 = generateRandomPermutation(r1LastPair);
+      const r1Scores = { A: 0, B: 0, C: 0, D: 0 };
+      updatedMatches.slice(0, 18).forEach(m => {
+        if (m && m.winner) r1Scores[m.winner] += 1;
+      });
+      const perm2 = generateRound2Permutation(r1Scores, r1LastPair);
       updates['permutations'] = { ...existingPerms, 2: perm2 };
     }
   }
