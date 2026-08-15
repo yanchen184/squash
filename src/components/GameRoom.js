@@ -1,4 +1,4 @@
-// Main game room component
+﻿// Main game room component
 import React, { useState, useEffect } from 'react';
 import { subscribeToRoom, recordMatchResult, finishTournament, updateRoomStatus, undoLastMatch } from '../services/database';
 import { getCurrentMatch, getRoundNumber, getMatchInRound, getLeaderboard } from '../utils/gameLogic';
@@ -8,7 +8,7 @@ import {
   cumulativeWinsInRound,
   groupByScore,
   shouldCollectScore,
-  roundPointsPerPlayer,
+  getPairForMatch,
 } from '../utils/rankingLogic';
 import GameBoard from './GameBoard';
 import Leaderboard from './Leaderboard';
@@ -23,7 +23,7 @@ const GameRoom = ({ roomCode, onLeaveRoom }) => {
   const [roundNumber, setRoundNumber] = useState(1);
   const [matchInRound, setMatchInRound] = useState(1);
   const [leaderboard, setLeaderboard] = useState([]);
-  const [showPoints, setShowPoints] = useState(false);
+  const [finalRoundResults, setFinalRoundResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
   const [canUndo, setCanUndo] = useState(false);
@@ -70,10 +70,25 @@ const GameRoom = ({ roomCode, onLeaveRoom }) => {
     setCurrentMatch(match);
     setRoundNumber(round);
     setMatchInRound(matchInCurrentRound);
-    const roundPoints = roundPointsPerPlayer(matches, userRound);
-    setLeaderboard(getLeaderboard(roundOnlyScores, playerNames).map(e => ({ ...e, points: roundPoints[e.player] || 0 })));
-    // Round 2 最後一輪 (sub-round 3):顯示累積比分,方便看 tie-break 勝利條件
-    setShowPoints(userRound === 2 && Math.floor((currentMatchIndex % 18) / 6) === 2);
+    setLeaderboard(getLeaderboard(roundOnlyScores, playerNames));
+    // Round 2 第 3 輪 (決勝輪,第 31-36 場):同分名次只看這 6 場的直接對戰勝負與比分,
+    // 總分不影響 — 積分榜下方直接列出這些場的結果
+    const decisive = [];
+    if (currentMatchIndex >= 30) {
+      for (let i = 30; i < 36; i++) {
+        const m = matches[i];
+        if (!m || !m.winner) continue;
+        const pair = getPairForMatch(matches, i, perms);
+        if (!pair) continue;
+        const loserKey = pair[0] === m.winner ? pair[1] : pair[0];
+        decisive.push({
+          winner: playerNames[m.winner] || m.winner,
+          loser: playerNames[loserKey] || loserKey,
+          score: m.scores ? `${m.scores.winner}:${m.scores.loser}` : null,
+        });
+      }
+    }
+    setFinalRoundResults(decisive);
     setIsFinished(data.status === 'finished');
 
     const hasMatches = matches.some(m => m && m.winner);
@@ -319,7 +334,7 @@ const GameRoom = ({ roomCode, onLeaveRoom }) => {
                 <Leaderboard
                   leaderboard={leaderboard}
                   isFinished={isFinished}
-                  showPoints={showPoints}
+                  finalRoundResults={finalRoundResults}
                 />
               </div>
             </div>
@@ -434,7 +449,7 @@ const GameRoom = ({ roomCode, onLeaveRoom }) => {
               <Leaderboard
                 leaderboard={leaderboard}
                 isFinished={isFinished}
-                showPoints={showPoints}
+                finalRoundResults={finalRoundResults}
               />
               <RulesPanel />
             </div>

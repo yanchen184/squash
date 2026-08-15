@@ -2653,3 +2653,24 @@ body {
 .match-result .mr-vs { color: #999; }
 .match-result .mr-loser { color: #888; }
 .match-result .mr-score { color: #555; margin-left: 4px; }
+
+/* 決勝輪 (R2 第 3 輪) 對戰結果 — 同分名次依據 */
+.final-h2h {
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: #fff8e1;
+  border: 1px solid #ffe082;
+  border-radius: 8px;
+}
+.final-h2h-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #8d6e00;
+  margin-bottom: 6px;
+}
+.final-h2h-row {
+  font-size: 13px;
+  color: #444;
+  padding: 2px 0;
+}
+.final-h2h-row b { color: #2e7d32; }

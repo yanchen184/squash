@@ -6,6 +6,7 @@ import RoomCreator from './RoomCreator';
 import Settings from './Settings';
 import GlobalHistoryModal from './GlobalHistoryModal';
 import StatsModal from './StatsModal';
+import RulesPanel from './RulesPanel';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -66,6 +67,9 @@ const Home = () => {
             📊 統計
           </button>
         </div>
+
+        {/* 計分規則 — 首頁直接展開 */}
+        <RulesPanel defaultOpen />
 
         <div className="rooms-section">
           <h2>可加入的房間</h2>

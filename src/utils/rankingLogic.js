@@ -354,11 +354,10 @@ export const computeRoundRanking = (matches, round, rpsResults = {}, hasBreakerD
  *
  * 條件:
  * - Round 1: 永遠不需要
- * - Round 2: 模擬所有剩餘對局,若存在一種結局是:
- *   (a) Round 2 末 3 人同分,且此場介於那 3 人之間 (供 R2 末 tie-break) → 需要
- *   (b) Round 1 末有 3 人同分,且此場屬 R2 第 1 輪那 3 人 H2H,
- *       且該 3 場結果可能讓 3 人各 1 勝 (deuce 比較情境) → 需要
- *   否則 → 不需要
+ * - Round 2 第 3 輪 (決勝輪): 一律收集 — 同分名次靠這 6 場的對戰勝負與比分決定,
+ *   全記下來才不會事後缺資料 (2026-08-15 實測:條件模擬只收了 4/6 場,顯示不齊)
+ * - Round 2 第 1 輪: 模擬所有剩餘對局,只有 Round 1 末 3 人同分且此場屬那 3 人
+ *   H2H、且可能各 1 勝 (deuce 比較情境) 才需要
  */
 export const shouldCollectScore = (matchIndex, matches) => {
   const round = Math.floor(matchIndex / MATCHES_PER_ROUND) + 1;
@@ -367,24 +366,21 @@ export const shouldCollectScore = (matchIndex, matches) => {
   const matchInRound = matchIndex - MATCHES_PER_ROUND;
   const subRound = Math.floor(matchInRound / MATCHES_PER_SUBROUND) + 1;
   if (subRound === 2) return false; // 第 2 輪 永遠用不到
+  if (subRound === 3) return true;  // 決勝輪一律記比分
 
   const currentPair = getPairForMatch(matches, matchIndex);
   if (!currentPair) return false;
 
-  // Round 1 是否 3 人同分 (供 第 1 輪 判斷)
-  let r1Tied3 = null;
-  if (subRound === 1) {
-    const r1 = cumulativeWinsInRound(matches, 1);
-    const groups = groupByScore(r1);
-    const g3 = groups.find(g => g.length >= 3);
-    if (!g3) return false; // 第 1 輪 但 round 1 沒 3 人同分 → 不需要
-    r1Tied3 = g3;
-    // 此場是不是 那 3 人之間
-    const set = new Set(r1Tied3);
-    if (!(set.has(currentPair[0]) && set.has(currentPair[1]))) return false;
-  }
+  // 以下只剩 第 1 輪:Round 1 是否 3 人同分
+  const r1 = cumulativeWinsInRound(matches, 1);
+  const r1Groups = groupByScore(r1);
+  const g3 = r1Groups.find(g => g.length >= 3);
+  if (!g3) return false; // round 1 沒 3 人同分 → 不需要
+  const r1Tied3 = g3;
+  // 此場是不是 那 3 人之間
+  const tiedSet = new Set(r1Tied3);
+  if (!(tiedSet.has(currentPair[0]) && tiedSet.has(currentPair[1]))) return false;
 
-  // 第 3 輪:還要進一步看「此場有沒有可能介於 R2 末 3 人 tied 之中」
   // 收集剩餘 (含當前) 未完成的 round 2 matches
   const endR2 = 2 * MATCHES_PER_ROUND;
   const remaining = [];
@@ -398,59 +394,12 @@ export const shouldCollectScore = (matchIndex, matches) => {
   // 限制爆炸 (理論最多 18 場,2^18 = 262144 還可接受;> 18 保守 return true)
   if (remaining.length > 20) return true;
 
-  const baseR2Scores = cumulativeWinsUpToMatch(matches, matchIndex);
-
-  // For 第 1 輪 case: 計算這 3 人的 H2H 範圍 (在 sub-round 1)
+  // 計算這 3 人的 H2H 範圍 (在 sub-round 1)
   const sub1Set = new Set(subRoundMatchIndexes(2, 1));
-  const sub3Set = new Set(subRoundMatchIndexes(2, 3));
 
   const totalCombos = 1 << remaining.length;
   for (let combo = 0; combo < totalCombos; combo++) {
-    // 模擬最終 round 2 分數
-    const finalScores = { ...baseR2Scores };
-    for (let j = 0; j < remaining.length; j++) {
-      const winnerIdx = (combo >> j) & 1;
-      const w = remainingPairs[j][winnerIdx];
-      finalScores[w] = (finalScores[w] || 0) + 1;
-    }
-
-    if (subRound === 3) {
-      // 是否 round 2 末 3 人同分? 此場是否介於那 3 人
-      const groups = groupByScore(finalScores);
-      const threeWay = groups.find(g => g.length >= 3);
-      if (threeWay) {
-        const set = new Set(threeWay);
-        if (set.has(currentPair[0]) && set.has(currentPair[1])) {
-          // 比分只在「3 人 H2H 循環 (勝場均等,各 1 勝)」時才會用到;
-          // 若 H2H 已能分出高下 (2/1/0),名次確立就不需比分。
-          const wins = {};
-          threeWay.forEach(p => { wins[p] = 0; });
-          sub3Set.forEach(idx => {
-            let winner;
-            let pair;
-            if (matches[idx] && matches[idx].winner) {
-              winner = matches[idx].winner;
-              pair = getPairForMatch(matches, idx);
-            } else {
-              const remIdx = remaining.indexOf(idx);
-              if (remIdx === -1) return;
-              pair = remainingPairs[remIdx];
-              winner = pair[(combo >> remIdx) & 1];
-            }
-            if (!pair) return;
-            if (set.has(pair[0]) && set.has(pair[1])) {
-              wins[winner] = (wins[winner] || 0) + 1;
-            }
-          });
-          const vals = Object.values(wins);
-          if (vals.length === 3 && vals.every(v => v === vals[0])) {
-            return true;
-          }
-        }
-      }
-    }
-
-    if (subRound === 1 && r1Tied3) {
+    {
       // 看 R2 第 1 輪那 3 人 H2H 在此 combo 下的勝場分布,有沒有可能各 1 勝
       const set = new Set(r1Tied3);
       const wins = {};
