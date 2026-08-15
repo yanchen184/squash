@@ -237,7 +237,11 @@ export const finishTournament = async (roomCode) => {
   if (!roomSnapshot.exists()) return;
   
   const roomData = roomSnapshot.val();
-  
+
+  // 防重複結算:多開分頁時每個分頁都會觸發一次(結算窗 onNext / 結束按鈕),
+  // 已 finished 的房間直接略過,不再寫 history
+  if (roomData.status === 'finished') return;
+
   // Create history record
   const historyRecord = {
     roomId: roomCode,
@@ -254,7 +258,9 @@ export const finishTournament = async (roomCode) => {
   };
   
   // Save to history collection
-  const historyRef = ref(database, `history/${roomCode}_${Date.now()}`);
+  // key 用房間 createdAt(固定值)而非 Date.now():就算兩個分頁同時通過上面的
+  // status 檢查,寫的也是同一個 key(覆寫),不會產生兩筆重複紀錄
+  const historyRef = ref(database, `history/${roomCode}_${roomData.createdAt || Date.now()}`);
   await set(historyRef, historyRecord);
   
   // Update room status
